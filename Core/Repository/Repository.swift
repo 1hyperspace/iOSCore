@@ -39,7 +39,7 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
 
     public enum Effect: Equatable {
         case initialize(items: [T])
-        case refreshItems(around: Int)
+        case refreshItemsIfNeeded(around: Int)
         case reloadItems
         case add(items: [T])
     }
@@ -60,9 +60,7 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
             state.dbExists = true
             return .update(state: state)
         case .readingItem(let index):
-            if !state.currentRange.contains(index) {
-                return .with(.refreshItems(around: index))
-            }
+            return .with(.refreshItemsIfNeeded(around: index))
         case .set(query: let query):
             var state = state
             state.currentQuery = query
@@ -76,13 +74,11 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
             state.totalCount = totalCount
             return .init(state: state, effects: [.reloadItems])
         }
-        
-        return .none
     }
 
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
         switch effect {
-        case .refreshItems(let index):
+        case .refreshItemsIfNeeded(let index):
             switch app.helpers.range.calculateRange(index: index, currentRange: state.currentRange) {
             case .failure(let error):
                 print(error)
@@ -94,8 +90,10 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
                 break
             }
         case .reloadItems:
-            guard let query = state.currentQuery, let statement = app.helpers.sqlStore.prepare(query.query) else { return }
-            guard let items = try? app.helpers.modelBuilder.createObjects(stmt: statement) else { return }
+            guard let query = state.currentQuery,
+                  let statement = app.helpers.sqlStore.prepare(query.query),
+                  let items = try? app.helpers.modelBuilder.createObjects(stmt: statement)
+            else { return }
             app.dispatch(event: .setCache(items: items))
         case .initialize(let items):
             // FIX: The reason we initialize the DB with values is that
@@ -116,10 +114,12 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
             app.dispatch(event: .add(items: items))
         case .add(let items):
             app.helpers.sqlStore.transaction(sqlStatements: items.compactMap { app.helpers.modelBuilder.insertSQL(for: $0) })
-            guard let currentQuery = state.currentQuery else {
+            guard let currentQuery = state.currentQuery,
+                  let count: Int64 = app.helpers.sqlStore.scalar(using: currentQuery.countQuery)
+            else {
                 return
             }
-            app.dispatch(event: .setTotalCount(app.helpers.sqlStore.count(using: currentQuery)))
+            app.dispatch(event: .setTotalCount(count))
         }
     }
 

@@ -9,30 +9,16 @@ import XCTest
 import Combine
 @testable import Core
 
-struct DummyStruct: Storable, Equatable {
-    static var version: Int = 0
-
-    let name: String
-    let age: Int
-    var identifier: String {
-        "\(name)\(age)"
-    }
-
-    enum IndexedFields: CodingKey, CaseIterable {
-        case name, age
-    }
-}
-
 class RepositoryTests: XCTestCase {
     var cancellables: [Cancellable] = []
 
     func testRepositoryAdd() {
-        let repository = Repository<DummyStruct>.new(freshStart: true)
+        let repository = Repository<Person>.new(freshStart: true)
 
-        var dummies: [DummyStruct] = []
+        var dummies: [Person] = []
 
         (1...100).forEach {
-            let something = DummyStruct(name: "Lucas", age: $0)
+            let something = Person(name: "Lucas", age: $0)
             dummies.append(something)
         }
 

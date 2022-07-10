@@ -24,6 +24,8 @@
 		7ECB4D8D2620969300FB65CE /* ContentApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ECB4D8C2620969300FB65CE /* ContentApp.swift */; };
 		7ECB4DA5262417DC00FB65CE /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = 7ECB4DA4262417DC00FB65CE /* SQLite */; };
 		7ECB4DAB2624184300FB65CE /* Repository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ECB4DAA2624184300FB65CE /* Repository.swift */; };
+		BE863352287B1E7E005062DF /* SQLAndModelStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE863351287B1E7E005062DF /* SQLAndModelStoreTests.swift */; };
+		BE863355287B1EE3005062DF /* DummyStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE863354287B1EE3005062DF /* DummyStruct.swift */; };
 		BEF7535C28660C0E00B67786 /* NetworkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF7535B28660C0E00B67786 /* NetworkHelper.swift */; };
 		BEF753612866494D00B67786 /* Etherscan.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF753602866494D00B67786 /* Etherscan.swift */; };
 		BEF753642866553600B67786 /* ABIItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF753632866553600B67786 /* ABIItems.swift */; };
@@ -62,6 +64,8 @@
 		7ECB4D7F2620705300FB65CE /* MockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockApp.swift; sourceTree = "<group>"; };
 		7ECB4D8C2620969300FB65CE /* ContentApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentApp.swift; sourceTree = "<group>"; };
 		7ECB4DAA2624184300FB65CE /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
+		BE863351287B1E7E005062DF /* SQLAndModelStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLAndModelStoreTests.swift; sourceTree = "<group>"; };
+		BE863354287B1EE3005062DF /* DummyStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DummyStruct.swift; sourceTree = "<group>"; };
 		BEF7535B28660C0E00B67786 /* NetworkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkHelper.swift; sourceTree = "<group>"; };
 		BEF753602866494D00B67786 /* Etherscan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Etherscan.swift; sourceTree = "<group>"; };
 		BEF753632866553600B67786 /* ABIItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ABIItems.swift; sourceTree = "<group>"; };
@@ -141,10 +145,12 @@
 		7ECB4D5726205AC700FB65CE /* CoreTests */ = {
 			isa = PBXGroup;
 			children = (
+				BE863353287B1EBE005062DF /* MocksAndModels */,
 				7ECB4D7F2620705300FB65CE /* MockApp.swift */,
 				7ECB4D5A26205AC700FB65CE /* Info.plist */,
 				7E652A7826247EA4007B5264 /* RangeHelperTests.swift */,
 				7E78C854262F1FCB0007124C /* RepositoryTests.swift */,
+				BE863351287B1E7E005062DF /* SQLAndModelStoreTests.swift */,
 			);
 			path = CoreTests;
 			sourceTree = "<group>";
@@ -179,6 +185,14 @@
 				7E85F35A262B5E6000C4F67E /* Storable.swift */,
 			);
 			path = Repository;
+			sourceTree = "<group>";
+		};
+		BE863353287B1EBE005062DF /* MocksAndModels */ = {
+			isa = PBXGroup;
+			children = (
+				BE863354287B1EE3005062DF /* DummyStruct.swift */,
+			);
+			path = MocksAndModels;
 			sourceTree = "<group>";
 		};
 		BEF7535A28660C0100B67786 /* Network */ = {
@@ -345,7 +359,9 @@
 			files = (
 				7ECB4D842620742E00FB65CE /* MockApp.swift in Sources */,
 				7E652A7926247EA4007B5264 /* RangeHelperTests.swift in Sources */,
+				BE863352287B1E7E005062DF /* SQLAndModelStoreTests.swift in Sources */,
 				7E78C855262F1FCB0007124C /* RepositoryTests.swift in Sources */,
+				BE863355287B1EE3005062DF /* DummyStruct.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

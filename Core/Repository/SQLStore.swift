@@ -19,25 +19,26 @@ class SQLStore<S: Storable> {
 
         do {
             if freshStart {
-                try FileManager.default.removeItem(at: fullPath)
+                try? FileManager.default.removeItem(at: fullPath)
             }
             self.db = try Connection(fullPath.absoluteString)
-        } catch {
+        }
+        catch {
             print("Error Initializing Class: \(error.localizedDescription)")
             return nil
         }
     }
 
-    public func count(using query: ListingQuery<S>) -> Int64 {
+    public func scalar<V>(using query: String) -> V? {
         do {
-            let binding = try db.scalar(query.countQuery)
-            return binding as! Int64 // ?? 0
+            let binding = try db.scalar(query)
+            return binding as? V // ?? 0
         } catch let Result.error(message, _, _) {
             print("SQLite Error: \(message)")
-            return 0
+            return nil
         } catch {
             print("Unknown error: \(error.localizedDescription)")
-            return 0
+            return nil
         }
     }
 
