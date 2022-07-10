@@ -114,7 +114,7 @@ public class ModelBuilder<S: Storable> {
 
     public func createSQL(for item: S) -> String {
         let createTable = contentTable.create(block: { b in
-            b.column(id)
+            b.column(id, primaryKey: true)
             b.column(expiresAt)
             b.column(createdAt)
             b.column(deletedAt)

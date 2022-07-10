@@ -110,7 +110,7 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
             }
 
             guard app.helpers.sqlStore.execute(app.helpers.modelBuilder.existsSQL()) else {
-                fatalError()
+                fatalError("DB non existent (should've been created or been already available)")
             }
             app.dispatch(event: .dbInitialized)
             app.dispatch(event: .add(items: items))

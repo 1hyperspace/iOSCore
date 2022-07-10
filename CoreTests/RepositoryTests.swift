@@ -14,7 +14,9 @@ struct DummyStruct: Storable, Equatable {
 
     let name: String
     let age: Int
-    var identifier: String = "2"
+    var identifier: String {
+        "\(name)\(age)"
+    }
 
     enum IndexedFields: CodingKey, CaseIterable {
         case name, age
@@ -30,7 +32,7 @@ class RepositoryTests: XCTestCase {
         var dummies: [DummyStruct] = []
 
         (1...100).forEach {
-            let something = DummyStruct(name: "Lucas\($0)", age: $0)
+            let something = DummyStruct(name: "Lucas", age: $0)
             dummies.append(something)
         }
 
