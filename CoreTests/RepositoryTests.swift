@@ -41,34 +41,19 @@ class RepositoryTests: XCTestCase {
         cancellables.append(repository
             .$state
             .sink { state in
-                guard state.dbExists == true else {
-                    return
+                if state.dbExists == true {
+                    expectationInitialized.fulfill()
                 }
-                expectationInitialized.fulfill()
-            })
-
-        cancellables.append(repository
-            .$state
-            .sink { state in
-                print("TOTAL \(state.totalCount)")
-                guard state.totalCount == 50 else {
-                    return
+                if state.totalCount == 100  {
+                    expectationDataAdded.fulfill()
                 }
-                expectationDataAdded.fulfill()
-            })
-
-        cancellables.append(repository
-            .$state
-            .sink { state in
-                guard state.cachedItems.count == 50 else {
-                    return
+                if state.cachedItems.count == 50 {
+                    expectationCacheAdded.fulfill()
                 }
-                expectationCacheAdded.fulfill()
             })
 
         repository.dispatch(.add(items: dummies))
         let defaultQuery = repository.helpers.modelBuilder.defaultQuery()
-        defaultQuery.addFilter(field: .age, expression: "< 51")
         repository.dispatch(.set(query: defaultQuery))
 
         wait(for: [expectationInitialized, expectationDataAdded, expectationCacheAdded], timeout: 10)

@@ -45,8 +45,8 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
     // We break the strong typing so we can keep it flexible to the user of the lib
     var query: String {
         var query = "SELECT fullObjectData from \(itemName)"
-        query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: "AND"))" : ""
-        query += sortByClauses.count > 0 ? " SORT BY \(sortByClauses.joined(separator: ","))" : ""
+        query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: " AND "))" : ""
+        query += sortByClauses.count > 0 ? " ORDER BY \(sortByClauses.joined(separator: ", "))" : ""
         if let page = page {
             query += " \(page.sql)"
         }
@@ -55,7 +55,7 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
 
     var countQuery: String {
         var query = "SELECT count(id) from \(itemName)"
-        query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: "AND"))" : ""
+        query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: " AND "))" : ""
         if let page = page {
             query += " \(page.sql)"
         }
