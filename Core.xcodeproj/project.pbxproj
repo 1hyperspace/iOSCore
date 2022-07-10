@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7E260454262D96E900FAC11B /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E260453262D96E900FAC11B /* Filter.swift */; };
-		7E260458262D971F00FAC11B /* Sort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E260457262D971F00FAC11B /* Sort.swift */; };
 		7E2BAB98262AC2CF005FE7D0 /* SQLStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2BAB97262AC2CF005FE7D0 /* SQLStore.swift */; };
 		7E4476CA26288A9700099450 /* Page.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E4476C926288A9700099450 /* Page.swift */; };
 		7E652A7926247EA4007B5264 /* RangeHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E652A7826247EA4007B5264 /* RangeHelperTests.swift */; };
@@ -44,8 +42,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		7E260453262D96E900FAC11B /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
-		7E260457262D971F00FAC11B /* Sort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sort.swift; sourceTree = "<group>"; };
 		7E2BAB97262AC2CF005FE7D0 /* SQLStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLStore.swift; sourceTree = "<group>"; };
 		7E4476C926288A9700099450 /* Page.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Page.swift; sourceTree = "<group>"; };
 		7E652A7826247EA4007B5264 /* RangeHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeHelperTests.swift; sourceTree = "<group>"; };
@@ -96,8 +92,6 @@
 			isa = PBXGroup;
 			children = (
 				7E4476C926288A9700099450 /* Page.swift */,
-				7E260453262D96E900FAC11B /* Filter.swift */,
-				7E260457262D971F00FAC11B /* Sort.swift */,
 				7E652A8D2624A55E007B5264 /* ModelBuilder.swift */,
 			);
 			path = QueryingClasses;
@@ -340,9 +334,7 @@
 				7ECB4D7626205B2000FB65CE /* AnyStateApp.swift in Sources */,
 				7ECB4D7B26205DF400FB65CE /* StateApp.swift in Sources */,
 				7ECB4DAB2624184300FB65CE /* Repository.swift in Sources */,
-				7E260454262D96E900FAC11B /* Filter.swift in Sources */,
 				FBF91B172637355D00436090 /* String.swift in Sources */,
-				7E260458262D971F00FAC11B /* Sort.swift in Sources */,
 				7ECB4D8D2620969300FB65CE /* ContentApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

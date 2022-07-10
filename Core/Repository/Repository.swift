@@ -15,24 +15,25 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
     public struct Helpers {
         let range: RangeHelper
         let sqlStore: SQLStore<T>
+        let modelBuilder: ModelBuilder<T>
     }
 
     public enum Input {
         case dbInitialized
         case add(items: [T])
         case setCache(items: [T])
-        case setTotalCount(Int)
+        case setTotalCount(Int64)
         case readingItem(index: Int)
-        case set(query: ListingQuery)
+        case set(query: ListingQuery<T>)
     }
 
     public struct State: Equatable, Codable {
         var pageSize: Int
-        var totalCount: Int = 0
+        var totalCount: Int64 = 0
         var cachedItems: [T] = []
         var currentIndex: Int = 0
         var currentRange: Range<Int> = 0..<0
-        var currentQuery: ListingQuery?
+        var currentQuery: ListingQuery<T>?
         var dbExists: Bool = false
     }
 
@@ -73,7 +74,7 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
         case .setTotalCount(let totalCount):
             var state = state
             state.totalCount = totalCount
-            return .update(state: state)
+            return .init(state: state, effects: [.reloadItems])
         }
         
         return .none
@@ -82,33 +83,43 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
         switch effect {
         case .refreshItems(let index):
-            switch app.helpers?.range.calculateRange(index: index, currentRange: state.currentRange) {
+            switch app.helpers.range.calculateRange(index: index, currentRange: state.currentRange) {
             case .failure(let error):
                 print(error)
             case .success(.suggested(let range)):
                 // drop old, add new
                 state.currentQuery?.set(page: Page(start: range.startIndex, count: range.endIndex))
                 break
-            case .success(.noChangeNeeded), .none:
+            case .success(.noChangeNeeded):
                 break
             }
         case .reloadItems:
-            guard let query = state.currentQuery, let items = app.helpers?.sqlStore.loadItems(query.queryString) else { return }
+            guard let query = state.currentQuery, let statement = app.helpers.sqlStore.prepare(query.query) else { return }
+            guard let items = try? app.helpers.modelBuilder.createObjects(stmt: statement) else { return }
             app.dispatch(event: .setCache(items: items))
         case .initialize(let items):
-            // The reason we initialize the DB with values is that
+            // FIX: The reason we initialize the DB with values is that
             // reflection doesn't work with static types
             guard let firstItem = items.first else { return }
+            [
+                app.helpers.modelBuilder.createSQL(for: firstItem),
+                app.helpers.modelBuilder.createFTSSQL(),
+                app.helpers.modelBuilder.createRTreeSQL()
+            ].forEach { queryString in
+                app.helpers.sqlStore.execute(queryString)
+            }
 
-            app.helpers?.sqlStore.initializeTables(for: firstItem)
-            guard app.helpers!.sqlStore.exists() else {
+            guard app.helpers.sqlStore.execute(app.helpers.modelBuilder.existsSQL()) else {
                 fatalError()
             }
             app.dispatch(event: .dbInitialized)
             app.dispatch(event: .add(items: items))
         case .add(let items):
-            app.helpers?.sqlStore.add(items: items)
-            app.dispatch(event: .setTotalCount(app.helpers?.sqlStore.count() ?? 0))
+            app.helpers.sqlStore.transaction(sqlStatements: items.compactMap { app.helpers.modelBuilder.insertSQL(for: $0) })
+            guard let currentQuery = state.currentQuery else {
+                return
+            }
+            app.dispatch(event: .setTotalCount(app.helpers.sqlStore.count(using: currentQuery)))
         }
     }
 
@@ -116,17 +127,18 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
         guard let sqlStore = SQLStore<T>(freshStart: freshStart) else {
             fatalError("Can't create store for \(type(of: T.self))")
         }
+        let modelBuilder = ModelBuilder<T>()
 
         return StateApp<Repository<T>>(
             State(
                 pageSize: Constants.pageSize,
-                dbExists: sqlStore.exists()
+                dbExists: sqlStore.execute(modelBuilder.existsSQL())
             ),
             helpers: Repository<T>.Helpers(
                 range: RangeHelper(),
-                sqlStore: sqlStore
+                sqlStore: sqlStore,
+                modelBuilder: modelBuilder
             )
         )
     }
-
 }

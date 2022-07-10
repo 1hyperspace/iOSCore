@@ -9,8 +9,8 @@ import Foundation
 
 public struct AnyDispatch<T, H> {
     private let closure: (T) -> Operation
-    let helpers: H?
-    init(closure: @escaping (T) -> Operation, helpers: H?) {
+    let helpers: H
+    init(closure: @escaping (T) -> Operation, helpers: H) {
         self.closure = closure
         self.helpers = helpers
     }

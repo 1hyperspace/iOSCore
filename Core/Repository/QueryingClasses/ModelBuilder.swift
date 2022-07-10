@@ -8,30 +8,58 @@
 import Foundation
 import SQLite
 
-public class ListingQuery: Equatable, Codable {
-    var filters: [Filter]
-    var page: Page?
-    let itemName: String
+public class ListingQuery<S: Storable>: Equatable, Codable {
+    private var whereClauses: [String]
+    private var sortByClauses: [String]
+    private var page: Page?
+    private let itemName: String
 
-    public init(itemName: String) {
+    internal init(itemName: String) {
         self.itemName = itemName
-        self.filters = []
+        self.whereClauses = []
+        self.sortByClauses = []
     }
 
     public static func == (lhs: ListingQuery, rhs: ListingQuery) -> Bool {
-        lhs.page == rhs.page && lhs.queryString == rhs.queryString
+        lhs.page == rhs.page && lhs.query == rhs.query
     }
 
-    public func set(page: Page) {
+    @discardableResult
+    public func set(page: Page) -> Self {
         self.page = page
+        return self
     }
 
-    public func add(filter: Filter) {
-        self.filters.append(filter)
+    @discardableResult
+    public func addFilter(field: S.IndexedFields, expression: String) -> Self {
+        self.whereClauses.append("\(field.stringValue) \(expression)")
+        return self
     }
 
-    var queryString: String {
-        "SELECT * from \(itemName)"
+    @discardableResult
+    public func addSort(field: S.IndexedFields, expression: String) -> Self {
+        self.sortByClauses.append("\(field.stringValue) \(expression)")
+        return self
+    }
+
+    // We break the strong typing so we can keep it flexible to the user of the lib
+    var query: String {
+        var query = "SELECT fullObjectData from \(itemName)"
+        query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: "AND"))" : ""
+        query += sortByClauses.count > 0 ? " SORT BY \(sortByClauses.joined(separator: ","))" : ""
+        if let page = page {
+            query += " \(page.sql)"
+        }
+        return query
+    }
+
+    var countQuery: String {
+        var query = "SELECT count(id) from \(itemName)"
+        query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: "AND"))" : ""
+        if let page = page {
+            query += " \(page.sql)"
+        }
+        return query
     }
 }
 
@@ -57,7 +85,7 @@ public class ModelBuilder<S: Storable> {
     private let expiresAt = Expression<Date?>("expiresAt")
     private let createdAt = Expression<Date?>("createdAt")
     private let deletedAt = Expression<Date?>("deletedAt")
-    public let fullObjectData = Expression<Data>("fullObjectData")
+    private let fullObjectData = Expression<Data>("fullObjectData")
     private let fts = Expression<String?>("fullTextSearch")
     private let areaExpression = AreaExpression(
         minLat: .init("minLat"),
@@ -72,9 +100,16 @@ public class ModelBuilder<S: Storable> {
         contentTable.exists.asSQL()
     }
 
-    // TODO: Make all function with SQLite.swift types since SQL store knows already
-    public func count() -> ScalarQuery<Int> {
-        contentTable.select(contentTable).count
+    public func defaultQuery() -> ListingQuery<S> {
+        return ListingQuery(itemName: "content_\(S.versionedName)").set(page: Page())
+    }
+
+    public func createObjects(stmt: Statement) throws -> [S]{
+        return try stmt.prepareRowIterator().map {
+            $0[fullObjectData]
+        }.map {
+            try JSONDecoder().decode(S.self, from: $0)
+        }
     }
 
     public func createSQL(for item: S) -> String {
@@ -146,6 +181,7 @@ public class ModelBuilder<S: Storable> {
                 return
             }
 
+            // TODO: Abstract this
             switch type(of: item.value) {
             case is Int.Type:
                 guard let typedItem = item.value as? Int else { return }

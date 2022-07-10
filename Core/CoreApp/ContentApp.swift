@@ -39,7 +39,7 @@ public enum ContentApp: AnyStateApp {
         switch effect {
         case .buttonTappedSent:
             let address = "0x65c816077c29b557bee980ae3cc2dce80204a0c5"
-            _ = app.helpers?.networkHelper.send(Etherscan.GetABI(address)) { result in
+            _ = app.helpers.networkHelper.send(Etherscan.GetABI(address)) { result in
                 switch result {
                 case .success(var items):
                     items.indices.forEach{ items[$0].address = address } // HACK for id

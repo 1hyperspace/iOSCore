@@ -13,7 +13,7 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
 
     private weak var delegate: StateApp?
     private let queue: DispatchQueue
-    private let helpers: A.Helpers?
+    public let helpers: A.Helpers
     
     private lazy var eventOperationQueue: OperationQueue = {
       var queue = OperationQueue()
@@ -29,7 +29,7 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
       return queue
     }()
 
-    public init(_ state: A.State = A.initialState(), helpers: A.Helpers? = nil, queue: DispatchQueue = DispatchQueue.main) {
+    public init(_ state: A.State = A.initialState(), helpers: A.Helpers, queue: DispatchQueue = DispatchQueue.main) {
         self.state = state
         self.queue = queue
         self.helpers = helpers

@@ -50,7 +50,8 @@ class RepositoryTests: XCTestCase {
         cancellables.append(repository
             .$state
             .sink { state in
-                guard state.totalCount == 100 else {
+                print("TOTAL \(state.totalCount)")
+                guard state.totalCount == 50 else {
                     return
                 }
                 expectationDataAdded.fulfill()
@@ -66,8 +67,11 @@ class RepositoryTests: XCTestCase {
             })
 
         repository.dispatch(.add(items: dummies))
+        let defaultQuery = repository.helpers.modelBuilder.defaultQuery()
+        defaultQuery.addFilter(field: .age, expression: "< 51")
+        repository.dispatch(.set(query: defaultQuery))
 
-        wait(for: [expectationInitialized, expectationDataAdded], timeout: 10)
+        wait(for: [expectationInitialized, expectationDataAdded, expectationCacheAdded], timeout: 10)
     }
 
     override func tearDown() {
