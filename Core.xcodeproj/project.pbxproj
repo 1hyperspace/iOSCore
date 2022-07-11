@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		7E2BAB98262AC2CF005FE7D0 /* SQLStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2BAB97262AC2CF005FE7D0 /* SQLStore.swift */; };
 		7E4476CA26288A9700099450 /* Page.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E4476C926288A9700099450 /* Page.swift */; };
-		7E652A7926247EA4007B5264 /* RangeHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E652A7826247EA4007B5264 /* RangeHelperTests.swift */; };
-		7E652A8A2624A140007B5264 /* RangeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E652A892624A140007B5264 /* RangeHelper.swift */; };
+		7E652A7926247EA4007B5264 /* PageHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E652A7826247EA4007B5264 /* PageHelperTests.swift */; };
+		7E652A8A2624A140007B5264 /* PageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E652A892624A140007B5264 /* PageHelper.swift */; };
 		7E652A8E2624A55E007B5264 /* ModelBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E652A8D2624A55E007B5264 /* ModelBuilder.swift */; };
 		7E78C855262F1FCB0007124C /* RepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E78C854262F1FCB0007124C /* RepositoryTests.swift */; };
 		7E85F35B262B5E6000C4F67E /* Storable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E85F35A262B5E6000C4F67E /* Storable.swift */; };
@@ -46,8 +46,8 @@
 /* Begin PBXFileReference section */
 		7E2BAB97262AC2CF005FE7D0 /* SQLStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLStore.swift; sourceTree = "<group>"; };
 		7E4476C926288A9700099450 /* Page.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Page.swift; sourceTree = "<group>"; };
-		7E652A7826247EA4007B5264 /* RangeHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeHelperTests.swift; sourceTree = "<group>"; };
-		7E652A892624A140007B5264 /* RangeHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RangeHelper.swift; sourceTree = "<group>"; };
+		7E652A7826247EA4007B5264 /* PageHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageHelperTests.swift; sourceTree = "<group>"; };
+		7E652A892624A140007B5264 /* PageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageHelper.swift; sourceTree = "<group>"; };
 		7E652A8D2624A55E007B5264 /* ModelBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBuilder.swift; sourceTree = "<group>"; };
 		7E78C854262F1FCB0007124C /* RepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryTests.swift; sourceTree = "<group>"; };
 		7E85F35A262B5E6000C4F67E /* Storable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storable.swift; sourceTree = "<group>"; };
@@ -148,7 +148,7 @@
 				BE863353287B1EBE005062DF /* MocksAndModels */,
 				7ECB4D7F2620705300FB65CE /* MockApp.swift */,
 				7ECB4D5A26205AC700FB65CE /* Info.plist */,
-				7E652A7826247EA4007B5264 /* RangeHelperTests.swift */,
+				7E652A7826247EA4007B5264 /* PageHelperTests.swift */,
 				7E78C854262F1FCB0007124C /* RepositoryTests.swift */,
 				BE863351287B1E7E005062DF /* SQLAndModelStoreTests.swift */,
 			);
@@ -180,7 +180,7 @@
 			children = (
 				7E4476C426288A4F00099450 /* QueryingClasses */,
 				7ECB4DAA2624184300FB65CE /* Repository.swift */,
-				7E652A892624A140007B5264 /* RangeHelper.swift */,
+				7E652A892624A140007B5264 /* PageHelper.swift */,
 				7E2BAB97262AC2CF005FE7D0 /* SQLStore.swift */,
 				7E85F35A262B5E6000C4F67E /* Storable.swift */,
 			);
@@ -338,7 +338,7 @@
 				7ECB4D4926205AC600FB65CE /* ContentView.swift in Sources */,
 				7E652A8E2624A55E007B5264 /* ModelBuilder.swift in Sources */,
 				FBF91B112637339F00436090 /* FileManager.swift in Sources */,
-				7E652A8A2624A140007B5264 /* RangeHelper.swift in Sources */,
+				7E652A8A2624A140007B5264 /* PageHelper.swift in Sources */,
 				7ECB4D4726205AC600FB65CE /* CoreApp.swift in Sources */,
 				7E85F35B262B5E6000C4F67E /* Storable.swift in Sources */,
 				7E4476CA26288A9700099450 /* Page.swift in Sources */,
@@ -358,7 +358,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7ECB4D842620742E00FB65CE /* MockApp.swift in Sources */,
-				7E652A7926247EA4007B5264 /* RangeHelperTests.swift in Sources */,
+				7E652A7926247EA4007B5264 /* PageHelperTests.swift in Sources */,
 				BE863352287B1E7E005062DF /* SQLAndModelStoreTests.swift in Sources */,
 				7E78C855262F1FCB0007124C /* RepositoryTests.swift in Sources */,
 				BE863355287B1EE3005062DF /* DummyStruct.swift in Sources */,

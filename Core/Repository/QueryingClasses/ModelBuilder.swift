@@ -11,7 +11,7 @@ import SQLite
 public class ListingQuery<S: Storable>: Equatable, Codable {
     private var whereClauses: [String]
     private var sortByClauses: [String]
-    private var page: Page?
+    public var page: Page?
     private let itemName: String
 
     internal init(itemName: String) {

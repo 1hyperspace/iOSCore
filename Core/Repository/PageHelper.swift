@@ -7,21 +7,24 @@
 
 import Foundation
 
-public struct RangeHelper {
-    public enum RangerError: Error, Equatable {
+public struct PageHelper {
+    public enum PageError: Error, Equatable {
         case negativeIndex
         case negativeRange
     }
 
     public enum Suggestion: Equatable {
-        case suggested(range: Range<Int>)
+        case suggested(page: Page)
         case noChangeNeeded
     }
 
-    func calculateRange(index: Int, currentRange: Range<Int>) -> Result<Suggestion, RangerError> {
-        guard let firstItem = currentRange.first, let lastItem = currentRange.last, index >= 0 else {
+    func calculatePage(index: Int, current: Page) -> Result<Suggestion, PageError> {
+        guard index >= 0 else {
             return .failure(.negativeIndex)
         }
+
+        let firstItem = current.start
+        let lastItem = current.start + current.count
 
         guard firstItem >= 0 else {
             return .failure(.negativeRange)
@@ -37,7 +40,8 @@ public struct RangeHelper {
         guard leftSide < rightSide, (leftSide..<rightSide).contains(index) else {
             let step = index - (index % (Constants.pageSize/2))
             let suggestedRange = max(0,index-Constants.pageSize)..<max(0,index-Constants.pageSize) + step + Constants.pageSize
-            return .success(.suggested(range: suggestedRange))
+            return .success(.suggested(page: Page(start: suggestedRange.lowerBound,
+                                                  count: suggestedRange.lowerBound.distance(to: suggestedRange.upperBound))))
         }
 
         return .success(.noChangeNeeded)

@@ -45,7 +45,6 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
     private func process(event: A.Input) -> Next<A.State, A.Effect> {
         let next = A.handle(event: event, with: state)
 
-        print("EVENT: \(event)")
         if let newState = next.state {
             queue.async {
                 self.state = newState
