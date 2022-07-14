@@ -11,7 +11,43 @@ public enum Constants {
     static let pageSize = 50
 }
 
-public enum Repository<T: Equatable & Storable>: AnyStateApp {
+// We created a wrapper of the stateApp so we can have custom methods
+// and other convenience variables
+public class Repository<T: Equatable & Storable> {
+    let stateApp: StateApp<RepositoryApp<T>>
+    let modelBuilder: ModelBuilder<T>
+
+    public func dispatch(_ event: RepositoryApp<T>.Input) {
+        stateApp.dispatch(event)
+    }
+
+    // FIX: how to solve the getOne
+    public func get(itemAt: Int) -> T {
+        stateApp.dispatch(.readingItem(index: itemAt))
+        let absolutePosition = itemAt - (stateApp.state.currentQuery?.page?.start ?? 0)
+        return stateApp.state.cachedItems[absolutePosition]
+    }
+
+    init(freshStart: Bool = false) {
+        guard let sqlStore = SQLStore<T>(freshStart: freshStart) else {
+            fatalError("Can't create store for \(type(of: T.self))")
+        }
+        modelBuilder = ModelBuilder<T>()
+
+        stateApp = StateApp<RepositoryApp<T>>(
+            .init(
+                dbExists: sqlStore.execute(modelBuilder.existsSQL())
+            ),
+            helpers: RepositoryApp<T>.Helpers(
+                page: PageHelper(),
+                sqlStore: sqlStore,
+                modelBuilder: modelBuilder
+            )
+        )
+    }
+}
+
+public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     public struct Helpers {
         let page: PageHelper
         let sqlStore: SQLStore<T>
@@ -121,23 +157,5 @@ public enum Repository<T: Equatable & Storable>: AnyStateApp {
             }
             app.dispatch(event: .setTotalCount(count))
         }
-    }
-
-    public static func new(freshStart: Bool = false) -> StateApp<Self> {
-        guard let sqlStore = SQLStore<T>(freshStart: freshStart) else {
-            fatalError("Can't create store for \(type(of: T.self))")
-        }
-        let modelBuilder = ModelBuilder<T>()
-
-        return StateApp<Repository<T>>(
-            State(
-                dbExists: sqlStore.execute(modelBuilder.existsSQL())
-            ),
-            helpers: Repository<T>.Helpers(
-                page: PageHelper(),
-                sqlStore: sqlStore,
-                modelBuilder: modelBuilder
-            )
-        )
     }
 }

@@ -25,20 +25,21 @@ class RepositoryTests: XCTestCase {
     // For example this one, it's testing that not only that the DB is initalized (SQLStore),
     // but also that the state of the repository is being updated (dbExists == true) and also
     func testRepositoryInitialize() {
-        let repository = Repository<Person>.new(freshStart: true)
+        let repository = Repository<Person>(freshStart: true)
 
         let dummies = generateDummies()
 
         let expectationInitialized = XCTestExpectation(description: "DB Initialized")
 
         cancellables.append(repository
+            .stateApp
             .$state
             .sink { state in
                 if state.dbExists == true {
                     expectationInitialized.fulfill()
                 }
             })
-        let defaultQuery = repository.helpers.modelBuilder.defaultQuery()
+        let defaultQuery = repository.modelBuilder.defaultQuery()
         repository.dispatch(.set(query: defaultQuery))
         repository.dispatch(.add(items: dummies))
 
@@ -46,20 +47,21 @@ class RepositoryTests: XCTestCase {
     }
 
     func testRepositoryAdd() {
-        let repository = Repository<Person>.new(freshStart: true)
+        let repository = Repository<Person>(freshStart: true)
 
         let dummies = generateDummies()
 
         let expectationDataAdded = XCTestExpectation(description: "Data Added")
 
         cancellables.append(repository
+            .stateApp
             .$state
             .sink { state in
                 if state.totalCount == 100  {
                     expectationDataAdded.fulfill()
                 }
             })
-        let defaultQuery = repository.helpers.modelBuilder.defaultQuery()
+        let defaultQuery = repository.modelBuilder.defaultQuery()
         repository.dispatch(.set(query: defaultQuery))
         repository.dispatch(.add(items: dummies))
         repository.dispatch(.readingItem(index: 49))
@@ -68,18 +70,19 @@ class RepositoryTests: XCTestCase {
     }
 
     func testRepositoryCache() {
-        let repository = Repository<Person>.new(freshStart: true)
+        let repository = Repository<Person>(freshStart: true)
         let dummies = generateDummies()
         let expectationCacheAdded = XCTestExpectation(description: "Cache Added")
 
         cancellables.append(repository
+            .stateApp
             .$state
             .sink { state in
                 if state.cachedItems.count == 50 {
                     expectationCacheAdded.fulfill()
                 }
             })
-        let defaultQuery = repository.helpers.modelBuilder.defaultQuery()
+        let defaultQuery = repository.modelBuilder.defaultQuery()
         repository.dispatch(.set(query: defaultQuery))
         repository.dispatch(.add(items: dummies))
 
@@ -87,18 +90,19 @@ class RepositoryTests: XCTestCase {
     }
 
     func testRepositoryReadingItem() {
-        let repository = Repository<Person>.new(freshStart: true)
+        let repository = Repository<Person>(freshStart: true)
         let dummies = generateDummies()
         let expectationCacheAdded = XCTestExpectation(description: "Cache Added")
 
         cancellables.append(repository
+            .stateApp
             .$state
             .sink { state in
                 if state.cachedItems.count == 75 {
                     expectationCacheAdded.fulfill()
                 }
             })
-        let defaultQuery = repository.helpers.modelBuilder.defaultQuery()
+        let defaultQuery = repository.modelBuilder.defaultQuery()
         repository.dispatch(.set(query: defaultQuery))
         repository.dispatch(.add(items: dummies))
         repository.dispatch(.readingItem(index: 49))

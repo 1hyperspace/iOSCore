@@ -1,9 +1,25 @@
 import Foundation
 
+struct Person: Storable, Equatable {
+    static var version: Int = 0
+
+    enum IndexedFields: CodingKey, CaseIterable {
+        case name, age
+    }
+
+    let name: String
+    let age: Int
+
+    var identifier: String {
+        "\(name)\(age)"
+    }
+}
+
 public enum ContentApp: AnyStateApp {
     public struct Helpers {
         let networkHelper: NetworkHelper
-        let abiStorage: StateApp<Repository<ABIItems>>
+        let abiRepo: Repository<ABIItems>
+        let personRepo: Repository<Person>
     }
 
     public static func initialState() -> State {
@@ -44,6 +60,7 @@ public enum ContentApp: AnyStateApp {
                 case .success(var items):
                     items.indices.forEach{ items[$0].address = address } // HACK for id
                     app.dispatch(event: .abiReceived(items: items))
+                    app.helpers.personRepo.dispatch(.add(items: [Person(name: "Lucas", age: 11)]))
                 case .failure(let error):
                     print("Error: \(error)")
                 }

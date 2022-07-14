@@ -11,7 +11,8 @@ struct ContentView: View {
     @ObservedObject private var contentApp = StateApp<ContentApp>(
         helpers: .init(
             networkHelper: NetworkHelper(),
-            abiStorage: Repository<ABIItems>.new()
+            abiRepo: Repository<ABIItems>(),
+            personRepo: Repository<Person>()
         )
     )
 

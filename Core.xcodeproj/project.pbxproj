@@ -146,7 +146,6 @@
 			isa = PBXGroup;
 			children = (
 				BE863353287B1EBE005062DF /* MocksAndModels */,
-				7ECB4D7F2620705300FB65CE /* MockApp.swift */,
 				7ECB4D5A26205AC700FB65CE /* Info.plist */,
 				7E652A7826247EA4007B5264 /* PageHelperTests.swift */,
 				7E78C854262F1FCB0007124C /* RepositoryTests.swift */,
@@ -190,6 +189,7 @@
 		BE863353287B1EBE005062DF /* MocksAndModels */ = {
 			isa = PBXGroup;
 			children = (
+				7ECB4D7F2620705300FB65CE /* MockApp.swift */,
 				BE863354287B1EE3005062DF /* DummyStruct.swift */,
 			);
 			path = MocksAndModels;
