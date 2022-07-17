@@ -10,7 +10,7 @@ struct Person: Storable, Equatable {
     let name: String
     let age: Int
 
-    var identifier: String {
+    var id: String {
         "\(name)\(age)"
     }
 }

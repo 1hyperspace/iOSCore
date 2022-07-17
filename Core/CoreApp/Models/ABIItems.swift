@@ -19,7 +19,7 @@ extension ABIItems: Identifiable, Indexable, Versionable {
         case type, name
     }
 
-    public var identifier: String {
+    public var id: String {
         address! + (name ?? "")
     }
 }

@@ -161,9 +161,7 @@ public class ModelBuilder<S: Storable> {
     }
 
     public func insertSQL(for item: S) -> String? {
-        guard let identifier = item.identifier.hashed() else {
-            return nil
-        }
+        let identifier = Int64(item.id.hashValue)
         var setters: [Setter] = []
 
         setters.append(id <- identifier)
