@@ -23,7 +23,7 @@ public enum ContentApp: AnyStateApp {
     }
 
     public static func initialState() -> State {
-        State(buttonTapped: false)
+        State(buttonTapped: 0)
     }
 
     public enum Input {
@@ -32,7 +32,7 @@ public enum ContentApp: AnyStateApp {
     }
 
     public struct State: Equatable, Codable {
-        var buttonTapped: Bool
+        var buttonTapped: Int = 0
     }
 
     public enum Effect: Equatable {
@@ -46,7 +46,7 @@ public enum ContentApp: AnyStateApp {
             return .with(.buttonTappedSent)
         case .abiReceived(let items):
             print("HERE: \(items.count)")
-            state.buttonTapped = true
+            state.buttonTapped += 1
             return .update(state: state)
         }
     }
@@ -60,7 +60,7 @@ public enum ContentApp: AnyStateApp {
                 case .success(var items):
                     items.indices.forEach{ items[$0].address = address } // HACK for id
                     app.dispatch(event: .abiReceived(items: items))
-                    app.helpers.personRepo.dispatch(.add(items: [Person(name: "Lucas", age: 11)]))
+                    app.helpers.personRepo.dispatch(.add(items: [Person(name: "Lucas", age: state.buttonTapped)]))
                 case .failure(let error):
                     print("Error: \(error)")
                 }

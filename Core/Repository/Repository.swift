@@ -114,7 +114,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
         switch effect {
         case .refreshItemsIfNeeded(let index):
-            guard let currentQuery = state.currentQuery else { return }
+            let currentQuery = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
             switch app.helpers.page.calculatePage(index: index, current: currentQuery.page ?? Page(start: 0)) {
             case .failure(let error):
                 print(error)
@@ -127,8 +127,8 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
                 break
             }
         case .reloadItems:
-            guard let query = state.currentQuery,
-                  let statement = app.helpers.sqlStore.prepare(query.query),
+            let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
+            guard let statement = app.helpers.sqlStore.prepare(query.query),
                   let items = try? app.helpers.modelBuilder.createObjects(stmt: statement)
             else { return }
             app.dispatch(event: .setCache(items: items))
@@ -150,8 +150,8 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             app.dispatch(event: .dbInitialized(items: items))
         case .add(let items):
             app.helpers.sqlStore.transaction(sqlStatements: items.compactMap { app.helpers.modelBuilder.insertSQL(for: $0) })
-            guard let currentQuery = state.currentQuery,
-                  let count: Int64 = app.helpers.sqlStore.scalar(using: currentQuery.countQuery)
+            let currentQuery = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
+            guard let count: Int64 = app.helpers.sqlStore.scalar(using: currentQuery.countQuery)
             else {
                 return
             }
