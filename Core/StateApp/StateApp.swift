@@ -46,7 +46,7 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
         let next = A.handle(event: event, with: state)
 
         if let newState = next.state {
-            queue.async {
+            queue.sync {
                 self.state = newState
             }
         }

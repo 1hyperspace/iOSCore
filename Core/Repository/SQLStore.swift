@@ -32,6 +32,7 @@ class SQLStore<S: Storable> {
     public func scalar<V>(using query: String) -> V? {
         do {
             let binding = try db.scalar(query)
+            guard let binding = binding else { return nil }
             return binding as? V // ?? 0
         } catch let Result.error(message, _, _) {
             print("SQLite Error: \(message)")
