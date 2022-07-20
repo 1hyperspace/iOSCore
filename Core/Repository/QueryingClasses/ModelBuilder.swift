@@ -44,7 +44,7 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
 
     // We break the strong typing so we can keep it flexible to the user of the lib
     var query: String {
-        var query = "SELECT fullObjectData from \(itemName)"
+        var query = "SELECT id, fullObjectData from \(itemName)"
         query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: " AND "))" : ""
         query += sortByClauses.count > 0 ? " ORDER BY \(sortByClauses.joined(separator: ", "))" : ""
         if let page = page {
@@ -56,9 +56,6 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
     var countQuery: String {
         var query = "SELECT count(id) from \(itemName)"
         query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: " AND "))" : ""
-        if let page = page {
-            query += " \(page.sql)"
-        }
         return query
     }
 }
@@ -104,9 +101,14 @@ public class ModelBuilder<S: Storable> {
         return ListingQuery(itemName: "content_\(S.versionedName)").set(page: Page())
     }
 
+    public func cleanQuery() -> ListingQuery<S> {
+        return ListingQuery(itemName: "content_\(S.versionedName)")
+            .set(page: Page())
+    }
+
     public func createObjects(stmt: Statement) throws -> [S]{
         return try stmt.prepareRowIterator().map {
-            $0[fullObjectData]
+            return $0[fullObjectData]
         }.map {
             try JSONDecoder().decode(S.self, from: $0)
         }

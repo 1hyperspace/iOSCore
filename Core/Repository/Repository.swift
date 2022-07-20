@@ -22,10 +22,10 @@ public class Repository<T: Equatable & Storable> {
     }
 
     // FIX: how to solve the getOne
-    public func get(itemAt: Int) -> T {
+    public func get(itemAt: Int) -> T? {
         stateApp.dispatch(.readingItem(index: itemAt))
         let absolutePosition = itemAt - (stateApp.state.currentQuery?.page?.start ?? 0)
-        return stateApp.state.cachedItems[absolutePosition]
+        return stateApp.state.cachedItems[safe: absolutePosition]
     }
 
     init(freshStart: Bool = false) {
@@ -57,14 +57,17 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     public enum Input {
         case dbInitialized(items: [T])
         case add(items: [T])
-        case setCache(items: [T])
+        case setCache(items: [T], totalCount: Int)
         case setTotalCount(Int64)
         case readingItem(index: Int)
+        case reloadItems
+        case itemsReloaded
         case set(query: ListingQuery<T>)
     }
 
     public struct State: Equatable, Codable {
-        var totalCount: Int64 = 0
+        var isLoadingItems = false
+        var totalCount: Int = 0
         var cachedItems: [T] = []
         var currentIndex: Int = 0
         var currentQuery: ListingQuery<T>?
@@ -83,7 +86,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     }
 
     public static func handle(event: Input, with state: State) -> Next<State, Effect> {
-        print("LUKEVENT: \(event)")
+        print("◦ EVENT: \(event)")
         switch event {
         case .add(let items):
             guard state.dbExists else {
@@ -96,22 +99,38 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             return .init(state: state, effects: [.add(items: items)])
         case .readingItem(let index):
             return .with(.refreshItemsIfNeeded(around: index))
+        case .reloadItems:
+            switch state.isLoadingItems {
+            case true:
+                return .none
+            case false:
+                var state = state
+                state.isLoadingItems = true
+                return .with(.reloadItems)
+            }
+        case .itemsReloaded:
+            var state = state
+            state.isLoadingItems = false
+            return .update(state: state)
         case .set(query: let query):
             var state = state
             state.currentQuery = query
+            state.isLoadingItems = true
             return .init(state: state, effects: [.reloadItems])
-        case .setCache(let items):
+        case .setCache(let items, let totalCount):
             var state = state
             state.cachedItems = items // TODO: do IDs diff for animations
+            state.totalCount = totalCount
             return .update(state: state)
         case .setTotalCount(let totalCount):
             var state = state
-            state.totalCount = totalCount
+            state.totalCount = Int(totalCount) // TODO: safely convert
             return .init(state: state, effects: [.reloadItems])
         }
     }
 
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
+        print("  ▉ Effect: \(effect)")
         switch effect {
         case .refreshItemsIfNeeded(let index):
             let currentQuery = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
@@ -119,7 +138,6 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             case .failure(let error):
                 print(error)
             case .success(.suggested(let page)):
-                print("LUK\(page.sql)")
                 currentQuery.set(page: page)
                 app.dispatch(event: .set(query: currentQuery))
                 break
@@ -129,9 +147,12 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         case .reloadItems:
             let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
             guard let statement = app.helpers.sqlStore.prepare(query.query),
-                  let items = try? app.helpers.modelBuilder.createObjects(stmt: statement)
-            else { return }
-            app.dispatch(event: .setCache(items: items))
+                  let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
+                  let count: Int64 = app.helpers.sqlStore.scalar(using: query.countQuery)
+            else {
+                return
+            }
+            app.dispatch(event: .setCache(items: items, totalCount: Int(count)))
         case .initialize(let items):
             // FIX: The reason we initialize the DB with values is that
             // reflection doesn't work with static types
