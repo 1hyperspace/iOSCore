@@ -1,6 +1,6 @@
 import Foundation
 
-struct Person: Storable, Equatable {
+struct Person: Storable, Equatable, Indexable {
     static var version: Int = 0
 
     enum IndexedFields: CodingKey, CaseIterable {

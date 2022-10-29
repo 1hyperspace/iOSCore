@@ -8,7 +8,7 @@
 import Foundation
 import SQLite
 
-public typealias Storable = Identifiable & Versionable & Codable & Indexable
+public typealias Storable = Identifiable & Versionable & Codable
 
 public protocol Locatable {
     var location: (Double, Double)? { get }

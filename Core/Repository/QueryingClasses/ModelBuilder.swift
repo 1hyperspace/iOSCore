@@ -31,13 +31,13 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
     }
 
     @discardableResult
-    public func addFilter(field: S.IndexedFields, expression: String) -> Self {
+    public func addFilter(field: S.IndexedFields, expression: String) -> Self where S: Indexable {
         self.whereClauses.append("\(field.stringValue) \(expression)")
         return self
     }
 
     @discardableResult
-    public func addSort(field: S.IndexedFields, expression: String) -> Self {
+    public func addSort(field: S.IndexedFields, expression: String) -> Self where S: Indexable {
         self.sortByClauses.append("\(field.stringValue) \(expression)")
         return self
     }
@@ -71,7 +71,6 @@ public struct AreaExpression {
     }
 }
 
-// TODO: Querybuilder knows only about the data of S?
 public class ModelBuilder<S: Storable> {
 
     private let contentTable = Table("content_\(S.versionedName)")
@@ -121,8 +120,21 @@ public class ModelBuilder<S: Storable> {
             b.column(createdAt)
             b.column(deletedAt)
             b.column(fullObjectData)
+        })
+
+        return createTable
+    }
+
+    public func createSQL(for item: S) -> String where S: Indexable {
+        let createTable = contentTable.create(block: { b in
+            b.column(id, primaryKey: true)
+            b.column(expiresAt)
+            b.column(createdAt)
+            b.column(deletedAt)
+            b.column(fullObjectData)
 
             let mirror = Mirror(reflecting: item)
+
             S.IndexedFields.allCases.forEach { key in
                 guard let item = mirror.children.first(where: { $0.label == key.stringValue }), let itemLabel = item.label else {
                     print("Couldn't find \(key.stringValue)")
@@ -162,7 +174,30 @@ public class ModelBuilder<S: Storable> {
         return locationTable.create(module)
     }
 
+    // There are two insertSQL ... one with Indexable and one without. Same for CreateSQL
+    // TODO: is there a better way to solve this? There are duplicated code
     public func insertSQL(for item: S) -> String? {
+        let identifier = Int64(item.id.hashValue)
+        var setters: [Setter] = []
+
+        setters.append(id <- identifier)
+
+        if let auditableItem = item as? Auditable {
+            setters.append(expiresAt <- auditableItem.expiresAt)
+            setters.append(createdAt <- auditableItem.createdAt)
+            setters.append(deletedAt <- auditableItem.deletedAt)
+        }
+
+        guard let data = try? JSONEncoder().encode(item) else {
+            fatalError()
+        }
+
+        setters.append(Expression<Data>("fullObjectData") <- data)
+
+        return contentTable.insert(setters).asSQL()
+    }
+
+    public func insertSQL(for item: S) -> String? where S: Indexable {
         let identifier = Int64(item.id.hashValue)
         var setters: [Setter] = []
 
@@ -181,7 +216,6 @@ public class ModelBuilder<S: Storable> {
                 return
             }
 
-            // TODO: Abstract this
             switch type(of: item.value) {
             case is Int.Type:
                 guard let typedItem = item.value as? Int else { return }
@@ -205,5 +239,4 @@ public class ModelBuilder<S: Storable> {
 
         return contentTable.insert(setters).asSQL()
     }
-
 }
