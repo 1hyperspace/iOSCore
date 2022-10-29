@@ -21,11 +21,24 @@ public class Repository<T: Equatable & Storable> {
         stateApp.dispatch(event)
     }
 
-    // FIX: how to solve the getOne
     public func get(itemAt: Int) -> T? {
         stateApp.dispatch(.readingItem(index: itemAt))
         let absolutePosition = itemAt - (stateApp.state.currentQuery?.page?.start ?? 0)
-        return stateApp.state.cachedItems[safe: absolutePosition]
+
+        if let item = stateApp.state.cachedItems[safe: absolutePosition] {
+            return item
+        }
+
+        guard
+            let currentQuery = stateApp.state.currentQuery,
+            let statement = stateApp.helpers.sqlStore.prepare(
+                currentQuery.set(page: Page(start: itemAt, count: 1)).query
+            ),
+            let item = try? stateApp.helpers.modelBuilder.createObjects(stmt: statement).first else {
+                return nil
+        }
+
+        return item
     }
 
     init(freshStart: Bool = false) {
