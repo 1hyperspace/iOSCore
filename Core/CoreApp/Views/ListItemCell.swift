@@ -26,8 +26,8 @@ class ListItemCell: UICollectionViewCell {
         titleLabel = UILabel()
         titleLabel.textAlignment = .center
         titleLabel.textColor = .white
-        self.contentView.addSubview(titleLabel)
-        self.contentView.backgroundColor = .red
+        contentView.addSubview(titleLabel)
+        contentView.backgroundColor = .red
         titleLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
