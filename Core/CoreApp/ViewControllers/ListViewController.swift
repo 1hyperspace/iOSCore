@@ -51,7 +51,7 @@ class ListViewController: UIViewController {
 
         repoApp = repo.stateApp
         let query = repoApp.helpers.modelBuilder.cleanQuery()
-//        query.addSort(field: .age, expression: "DESC")
+        query.addSort(field: .age, expression: "DESC")
         repoApp.dispatch(.set(query: query))
         super.init(nibName: nil, bundle: nil)
     }

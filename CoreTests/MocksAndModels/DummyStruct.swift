@@ -8,7 +8,7 @@
 import Foundation
 @testable import Core
 
-struct Person: Storable, Equatable, Indexable {
+struct Person: Storable, Equatable {
     static var version: Int = 0
 
     let name: String
