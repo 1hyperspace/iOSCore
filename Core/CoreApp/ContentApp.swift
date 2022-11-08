@@ -1,6 +1,6 @@
 import Foundation
 
-struct Person: Storable, Equatable, Indexable {
+struct Person: Storable, Equatable {
     static var version: Int = 0
 
     let name: String

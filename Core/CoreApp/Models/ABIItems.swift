@@ -7,18 +7,14 @@
 
 import Foundation
 
-public struct ABIItems: Codable, Equatable {
+public struct ABIItems: Storable, Equatable {
     var address: String?
     let type: String
     let name: String?
 }
 
-extension ABIItems: Identifiable, Indexable, Versionable {
+extension ABIItems {
     public static var version: Int = 1
-    public enum IndexedFields: CodingKey, CaseIterable {
-        case type, name
-    }
-
     public var id: String {
         address! + (name ?? "")
     }
