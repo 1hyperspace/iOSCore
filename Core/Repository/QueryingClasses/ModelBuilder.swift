@@ -31,13 +31,13 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
     }
 
     @discardableResult
-    public func addFilter(field: S.IndexedFields, expression: String) -> Self {
+    public func addFilter(field: S.IndexedFields, expression: String) -> Self where S: Indexable {
         self.whereClauses.append("\(field.stringValue) \(expression)")
         return self
     }
 
     @discardableResult
-    public func addSort(field: S.IndexedFields, expression: String) -> Self {
+    public func addSort(field: S.IndexedFields, expression: String) -> Self where S: Indexable {
         self.sortByClauses.append("\(field.stringValue) \(expression)")
         return self
     }
@@ -71,7 +71,6 @@ public struct AreaExpression {
     }
 }
 
-// TODO: Querybuilder knows only about the data of S?
 public class ModelBuilder<S: Storable> {
 
     private let contentTable = Table("content_\(S.versionedName)")
@@ -123,6 +122,7 @@ public class ModelBuilder<S: Storable> {
             b.column(fullObjectData)
 
             let mirror = Mirror(reflecting: item)
+
             S.IndexedFields.allCases.forEach { key in
                 guard let item = mirror.children.first(where: { $0.label == key.stringValue }), let itemLabel = item.label else {
                     print("Couldn't find \(key.stringValue)")
@@ -175,13 +175,13 @@ public class ModelBuilder<S: Storable> {
         }
 
         let mirror = Mirror(reflecting: item)
+
         S.IndexedFields.allCases.forEach { key in
             guard let item = mirror.children.first(where: { $0.label == key.stringValue }), let itemLabel = item.label else {
                 print("Couldn't find \(key.stringValue)")
                 return
             }
 
-            // TODO: Abstract this
             switch type(of: item.value) {
             case is Int.Type:
                 guard let typedItem = item.value as? Int else { return }
@@ -205,5 +205,4 @@ public class ModelBuilder<S: Storable> {
 
         return contentTable.insert(setters).asSQL()
     }
-
 }

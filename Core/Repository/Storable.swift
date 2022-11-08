@@ -25,8 +25,12 @@ public protocol Searchable {
     var ftsString: String { get }
 }
 
+public enum OnlyID: CodingKey, CaseIterable {
+    case id
+}
+
 public protocol Indexable {
-    associatedtype IndexedFields where IndexedFields: CaseIterable, IndexedFields: CodingKey
+    associatedtype IndexedFields: CaseIterable, CodingKey = OnlyID
 }
 
 public protocol Versionable {

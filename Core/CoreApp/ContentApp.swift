@@ -3,15 +3,14 @@ import Foundation
 struct Person: Storable, Equatable {
     static var version: Int = 0
 
-    enum IndexedFields: CodingKey, CaseIterable {
-        case name, age
-    }
-
     let name: String
     let age: Int
-
     var id: String {
         "\(name)\(age)"
+    }
+
+    enum IndexedFields: CodingKey, CaseIterable {
+        case name, age
     }
 }
 
