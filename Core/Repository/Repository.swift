@@ -32,7 +32,7 @@ public class Repository<T: Equatable & Storable> {
         guard
             let currentQuery = stateApp.state.currentQuery,
             let statement = stateApp.helpers.sqlStore.prepare(
-                currentQuery.set(page: Page(start: itemAt, count: 1)).query
+                currentQuery.sql(with: Page(start: itemAt, count: 1))
             ),
             let item = try? stateApp.helpers.modelBuilder.createObjects(stmt: statement).first else {
                 return nil
@@ -146,22 +146,23 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         print("  ▉ Effect: \(String(describing: effect).prefix(100))")
         switch effect {
         case .refreshItemsIfNeeded(let index):
-            let currentQuery = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
-            switch app.helpers.page.calculatePage(index: index, current: currentQuery.page ?? Page(start: 0)) {
+            let currentPage = state.currentQuery?.page ?? Page(start: 0)
+            switch app.helpers.page.calculatePage(index: index, current: currentPage) {
             case .failure(let error):
                 print(error)
             case .success(.suggested(let page)):
-                currentQuery.set(page: page)
-                app.dispatch(event: .set(query: currentQuery))
+                print("  📖 Current Page: \(currentPage) - Suggested Page: \(page)")
+                state.currentQuery?.set(page: page)
+                app.dispatch(event: .set(query: state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()))
                 break
             case .success(.noChangeNeeded):
                 break
             }
         case .reloadItems:
             let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
-            guard let statement = app.helpers.sqlStore.prepare(query.query),
+            guard let statement = app.helpers.sqlStore.prepare(query.sql()),
                   let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
-                  let count: Int64 = app.helpers.sqlStore.scalar(using: query.countQuery)
+                  let count: Int64 = app.helpers.sqlStore.scalar(using: query.sqlCount)
             else {
                 return
             }
@@ -185,7 +186,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         case .add(let items):
             app.helpers.sqlStore.transaction(sqlStatements: items.compactMap { app.helpers.modelBuilder.insertSQL(for: $0) })
             let currentQuery = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
-            guard let count: Int64 = app.helpers.sqlStore.scalar(using: currentQuery.countQuery)
+            guard let count: Int64 = app.helpers.sqlStore.scalar(using: currentQuery.sqlCount)
             else {
                 return
             }
