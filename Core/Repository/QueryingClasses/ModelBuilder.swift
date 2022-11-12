@@ -203,6 +203,6 @@ public class ModelBuilder<S: Storable> {
 
         setters.append(Expression<Data>("fullObjectData") <- data)
 
-        return contentTable.insert(setters).asSQL()
+        return contentTable.insert(or: .ignore, setters).asSQL()
     }
 }

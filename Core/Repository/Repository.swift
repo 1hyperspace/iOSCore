@@ -99,7 +99,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     }
 
     public static func handle(event: Input, with state: State) -> Next<State, Effect> {
-        print("◦ EVENT: \(event)")
+        print("◦ EVENT: \(String(describing: event).prefix(100))")
         switch event {
         case .add(let items):
             guard state.dbExists else {
@@ -143,7 +143,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     }
 
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
-        print("  ▉ Effect: \(effect)")
+        print("  ▉ Effect: \(String(describing: effect).prefix(100))")
         switch effect {
         case .refreshItemsIfNeeded(let index):
             let currentQuery = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()

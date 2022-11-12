@@ -1,24 +1,10 @@
 import Foundation
+import UIKit
 
-struct Person: Storable, Equatable {
-    static var version: Int = 0
-
-    let name: String
-    let age: Int
-    var id: String {
-        "\(name)\(age)"
-    }
-
-    enum IndexedFields: CodingKey, CaseIterable {
-        case name, age
-    }
-}
-
-public enum ContentApp: AnyStateApp {
+enum ContentApp: AnyStateApp {
     public struct Helpers {
         let networkHelper: NetworkHelper
-        let abiRepo: Repository<ABIItems>
-        let personRepo: Repository<Person>
+        let movieRepo: Repository<Movie>
     }
 
     public static func initialState() -> State {
@@ -26,8 +12,8 @@ public enum ContentApp: AnyStateApp {
     }
 
     public enum Input {
-        case buttonTapped
-        case abiReceived(items: [ABIItems])
+        case checkForData
+        case moviesParsed(items: [Movie])
     }
 
     public struct State: Equatable, Codable {
@@ -35,35 +21,45 @@ public enum ContentApp: AnyStateApp {
     }
 
     public enum Effect: Equatable {
-        case buttonTappedSent
+        case loadHistoricalEvents
+        case saveToRepository(items: [Movie])
     }
 
+    // TODO: Should we get access to the helpers here? otherwise you always
+    // need to create a new effect to dispatch to another state machine
     public static func handle(event: Input, with state: State) -> Next<State, Effect> {
         var state = state
         switch event {
-        case .buttonTapped:
-            return .with(.buttonTappedSent)
-        case .abiReceived(let items):
-            print("HERE: \(items.count)")
+        case .checkForData:
+            return .with(.loadHistoricalEvents)
+        case .moviesParsed(let items):
             state.buttonTapped += 1
-            return .update(state: state)
+            return .init(state: state, effects: [.saveToRepository(items: items)])
         }
     }
 
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
         switch effect {
-        case .buttonTappedSent:
-            let address = "0x65c816077c29b557bee980ae3cc2dce80204a0c5"
-            _ = app.helpers.networkHelper.send(Etherscan.GetABI(address)) { result in
-                switch result {
-                case .success(var items):
-                    items.indices.forEach{ items[$0].address = address } // HACK for id
-                    app.dispatch(event: .abiReceived(items: items))
-                    app.helpers.personRepo.dispatch(.add(items: [Person(name: "Lucas", age: state.buttonTapped)]))
-                case .failure(let error):
-                    print("Error: \(error)")
+        case .loadHistoricalEvents:
+            let defaults = UserDefaults.standard
+
+            defaults.removeObject(forKey: "dataLoaded")
+            if defaults.bool(forKey: "dataLoaded") != true {
+                defaults.set(true, forKey: "dataLoaded")
+                defaults.synchronize()
+
+                let asset = NSDataAsset(name: "movies", bundle: Bundle.main)
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                decoder.dateDecodingStrategy = .secondsSince1970
+                if let movies = try? decoder.decode([Movie].self, from: asset!.data) {
+                    app.dispatch(event: .moviesParsed(items: movies))
+                } else {
+                    fatalError("Failed to read")
                 }
             }
+        case .saveToRepository(let items):
+            app.helpers.movieRepo.dispatch(.add(items: items))
         }
     }
 }

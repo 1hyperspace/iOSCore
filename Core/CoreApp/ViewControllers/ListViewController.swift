@@ -13,8 +13,7 @@ import Combine
 class ListViewController: UIViewController {
 
     private var contentApp: StateApp<ContentApp>
-    private var repoApp: StateApp<RepositoryApp<Person>>
-    private let repo: Repository<Person>
+    private let repo: Repository<Movie>
 
     private var collectionView: UICollectionView!
     private var bag = Set<AnyCancellable>()
@@ -39,20 +38,22 @@ class ListViewController: UIViewController {
     }()
 
     init() {
-        repo = Repository<Person>()
+        repo = Repository<Movie>()
 
         contentApp = StateApp<ContentApp>(
             helpers: .init(
                 networkHelper: NetworkHelper(),
-                abiRepo: Repository<ABIItems>(),
-                personRepo: repo
+                movieRepo: repo
             )
         )
 
-        repoApp = repo.stateApp
-        let query = repoApp.helpers.modelBuilder.cleanQuery()
-        query.addSort(field: .age, expression: "DESC")
-        repoApp.dispatch(.set(query: query))
+        let query = repo.stateApp.helpers.modelBuilder.cleanQuery()
+        query
+            .addSort(field: .year, expression: "DESC")
+        repo.dispatch(.set(query: query))
+
+        contentApp.dispatch(.checkForData)
+        
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -68,7 +69,7 @@ class ListViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        repoApp.dispatch(.reloadItems)
+        repo.dispatch(.reloadItems)
     }
 
     private func setup() {
@@ -99,9 +100,9 @@ extension ListViewController: UICollectionViewDelegate, UICollectionViewDataSour
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "listItemCell", for: indexPath) as? ListItemCell else {
             fatalError()
         }
-        let person = repo.get(itemAt: indexPath.row)
-        if let person = person {
-            cell.configure(text: "\(person.name) of \(person.age)")
+        let movie = repo.get(itemAt: indexPath.row)
+        if let movie = movie {
+            cell.configure(text: "\(movie.title)")
         } else {
             cell.configure(text: "EMPTY")
         }
