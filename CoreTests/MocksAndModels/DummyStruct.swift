@@ -17,7 +17,7 @@ struct Person: Storable, Equatable {
         "\(name)\(age)"
     }
 
-    enum IndexedFields: CodingKey, CaseIterable {
-        case name, age
+    enum IndexedFields: IndexableKeys {
+        case name, age, id
     }
 }

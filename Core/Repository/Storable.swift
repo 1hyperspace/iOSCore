@@ -10,6 +10,8 @@ import SQLite
 
 public typealias Storable = Identifiable & Versionable & Codable & Indexable
 
+public typealias IndexableKeys = CodingKey & CaseIterable
+
 public protocol Locatable {
     var location: (Double, Double)? { get }
 }
@@ -25,12 +27,10 @@ public protocol Searchable {
     var ftsString: String { get }
 }
 
-public enum OnlyID: CodingKey, CaseIterable {
-    case id
-}
+public enum NoKeys: CodingKey, CaseIterable {}
 
 public protocol Indexable {
-    associatedtype IndexedFields: CaseIterable, CodingKey = OnlyID
+    associatedtype IndexedFields: CaseIterable, CodingKey = NoKeys
 }
 
 public protocol Versionable {
@@ -39,7 +39,8 @@ public protocol Versionable {
 }
 
 extension Versionable {
-    public static var versionedName: String {
+    static var versionedName: String {
         "\(String(describing: self))_\(String(version))"
     }
+    static var version: Int { 0 }
 }
