@@ -8,7 +8,8 @@
 import Foundation
 
 public enum Constants {
-    static let pageSize = 50
+    static let pageSize = 100
+    static let pageTriggerGap = 20
 }
 
 // We created a wrapper of the stateApp so we can have custom methods
@@ -16,29 +17,22 @@ public enum Constants {
 public class Repository<T: Equatable & Storable> {
     let stateApp: StateApp<RepositoryApp<T>>
     let modelBuilder: ModelBuilder<T>
+    var previousOperation: Operation? = nil
 
     public func dispatch(_ event: RepositoryApp<T>.Input) {
         stateApp.dispatch(event)
     }
 
     public func get(itemAt: Int) -> T? {
-        stateApp.dispatch(.readingItem(index: itemAt))
+        previousOperation?.cancel()
+        previousOperation = stateApp.dispatch(.readingItem(index: itemAt))
+
         let absolutePosition = itemAt - (stateApp.state.currentQuery?.page?.start ?? 0)
 
         if let item = stateApp.state.cachedItems[safe: absolutePosition] {
             return item
         }
-
-        guard
-            let currentQuery = stateApp.state.currentQuery,
-            let statement = stateApp.helpers.sqlStore.prepare(
-                currentQuery.sql(with: Page(start: itemAt, count: 1))
-            ),
-            let item = try? stateApp.helpers.modelBuilder.createObjects(stmt: statement).first else {
-                return nil
-        }
-
-        return item
+        return nil
     }
 
     init(freshStart: Bool = false) {
@@ -111,6 +105,10 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             state.dbExists = true
             return .init(state: state, effects: [.add(items: items)])
         case .readingItem(let index):
+            // Reading item does not update state, otherwise it would
+            // loop forever, since it reloads the table
+            // TODO: do the check here for "refresh". To do that
+            // we need to bring helpers to the `handle(event:)`
             return .with(.refreshItemsIfNeeded(around: index))
         case .reloadItems:
             switch state.isLoadingItems {
@@ -119,7 +117,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             case false:
                 var state = state
                 state.isLoadingItems = true
-                return .with(.reloadItems)
+                return .init(state: state, effects: [.reloadItems])
             }
         case .itemsReloaded:
             var state = state
@@ -151,9 +149,16 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             case .failure(let error):
                 print(error)
             case .success(.suggested(let page)):
-                print("  📖 Current Page: \(currentPage) - Suggested Page: \(page)")
+                print("  📘 Current Page: \(currentPage) - index \(index) - Suggested Page: \(page)")
                 state.currentQuery?.set(page: page)
-                app.dispatch(event: .set(query: state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()))
+                let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
+                guard let statement = app.helpers.sqlStore.prepare(query.sql()),
+                      let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
+                      let count: Int64 = app.helpers.sqlStore.scalar(using: query.sqlCount)
+                else {
+                    return
+                }
+                app.dispatch(event: .setCache(items: items, totalCount: Int(count)))
                 break
             case .success(.noChangeNeeded):
                 break

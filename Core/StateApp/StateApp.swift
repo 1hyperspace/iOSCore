@@ -79,6 +79,8 @@ extension StateApp {
             self.event = event
             self.delegate = delegate
         }
+
+
         
         override func main() {
             guard let delegate = delegate, isCancelled == false else {

@@ -18,6 +18,6 @@ struct Person: Storable, Equatable {
     }
 
     enum IndexedFields: IndexableKeys {
-        case name, age, id
+        case name, age
     }
 }

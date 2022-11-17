@@ -57,7 +57,7 @@ class RepositoryTests: XCTestCase {
             .stateApp
             .$state
             .sink { state in
-                if state.totalCount == 100  {
+                if state.totalCount == Constants.pageSize  {
                     expectationDataAdded.fulfill()
                 }
             })
@@ -78,7 +78,7 @@ class RepositoryTests: XCTestCase {
             .stateApp
             .$state
             .sink { state in
-                if state.cachedItems.count == 50 {
+                if state.cachedItems.count == Constants.pageSize {
                     expectationCacheAdded.fulfill()
                 }
             })
@@ -98,8 +98,10 @@ class RepositoryTests: XCTestCase {
             .stateApp
             .$state
             .sink { state in
-                if state.cachedItems.count == 75 {
+                if state.cachedItems.count == Constants.pageSize {
                     expectationCacheAdded.fulfill()
+                } else {
+                    print("Cached: \(state.cachedItems.count)")
                 }
             })
         let defaultQuery = repository.modelBuilder.defaultQuery()
