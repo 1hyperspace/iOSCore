@@ -183,15 +183,12 @@ public class ModelBuilder<S: Storable> {
                 return
             }
 
-            switch type(of: item.value) {
-            case is Int.Type:
-                guard let typedItem = item.value as? Int else { return }
+            switch item.value {
+            case let typedItem as Int:
                 setters.append(Expression<Int?>(itemLabel) <- typedItem)
-            case is String.Type:
-                guard let typedItem = item.value as? String else { return }
+            case let typedItem as String:
                 setters.append(Expression<String?>(itemLabel) <- typedItem)
-            case is Date.Type:
-                guard let typedItem = item.value as? Date else { return }
+            case let typedItem as Date:
                 setters.append(Expression<Date?>(itemLabel) <- typedItem)
             default:
                 break

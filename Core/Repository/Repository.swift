@@ -8,8 +8,14 @@
 import Foundation
 
 public enum Constants {
-    static let pageSize = 100
+    static let pageSize = pageTriggerGap * 5
     static let pageTriggerGap = 20
+    // this value should be less than 1/5th
+    // because the page gets moved 100/2=50
+    // so if pageTriggerGap is 30, then it starts
+    // firing back and forth in the middle because
+    // readingItem(index:) gets called on indexes that
+    // are on both sides of the page
 }
 
 // We created a wrapper of the stateApp so we can have custom methods
@@ -29,10 +35,7 @@ public class Repository<T: Equatable & Storable> {
 
         let absolutePosition = itemAt - (stateApp.state.currentQuery?.page?.start ?? 0)
 
-        if let item = stateApp.state.cachedItems[safe: absolutePosition] {
-            return item
-        }
-        return nil
+        return stateApp.state.cachedItems[safe: absolutePosition]
     }
 
     init(freshStart: Bool = false) {
