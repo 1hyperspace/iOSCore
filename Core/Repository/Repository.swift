@@ -153,6 +153,8 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
                 print(error)
             case .success(.suggested(let page)):
                 print("  📘 Current Page: \(currentPage) - index \(index) - Suggested Page: \(page)")
+                // THIS works because it's by reference
+                // :nervous laugh:
                 state.currentQuery?.set(page: page)
                 let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
                 guard let statement = app.helpers.sqlStore.prepare(query.sql()),
