@@ -175,6 +175,8 @@ public class ModelBuilder<S: Storable> {
             setters.append(deletedAt <- auditableItem.deletedAt)
         }
 
+        // TODO: Do mirror only for discovery
+        // Also store the Expressions in an array
         let mirror = Mirror(reflecting: item)
 
         S.IndexedFields.allCases.forEach { key in
