@@ -24,12 +24,14 @@ class ListItemCell: UICollectionViewCell {
 
     private func setup() {
         titleLabel = UILabel()
-        titleLabel.textAlignment = .center
+        titleLabel.textAlignment = .left
         titleLabel.textColor = .white
+        titleLabel.numberOfLines = 0
+        titleLabel.font = titleLabel.font.withSize(31)
         contentView.addSubview(titleLabel)
         contentView.backgroundColor = .red
         titleLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalToSuperview().inset(20)
         }
     }
 

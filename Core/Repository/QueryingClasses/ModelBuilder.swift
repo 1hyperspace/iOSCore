@@ -21,7 +21,7 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
     }
 
     public static func == (lhs: ListingQuery, rhs: ListingQuery) -> Bool {
-        lhs.page == rhs.page && lhs.query == rhs.query
+        lhs.page == rhs.page && lhs.sql() == rhs.sql()
     }
 
     @discardableResult
@@ -43,7 +43,8 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
     }
 
     // We break the strong typing so we can keep it flexible to the user of the lib
-    var query: String {
+    public func sql(with page: Page? = nil) -> String {
+        let page = page ?? self.page
         var query = "SELECT id, fullObjectData from \(itemName)"
         query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: " AND "))" : ""
         query += sortByClauses.count > 0 ? " ORDER BY \(sortByClauses.joined(separator: ", "))" : ""
@@ -53,7 +54,7 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
         return query
     }
 
-    var countQuery: String {
+    var sqlCount: String {
         var query = "SELECT count(id) from \(itemName)"
         query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: " AND "))" : ""
         return query
@@ -182,15 +183,12 @@ public class ModelBuilder<S: Storable> {
                 return
             }
 
-            switch type(of: item.value) {
-            case is Int.Type:
-                guard let typedItem = item.value as? Int else { return }
+            switch item.value {
+            case let typedItem as Int:
                 setters.append(Expression<Int?>(itemLabel) <- typedItem)
-            case is String.Type:
-                guard let typedItem = item.value as? String else { return }
+            case let typedItem as String:
                 setters.append(Expression<String?>(itemLabel) <- typedItem)
-            case is Date.Type:
-                guard let typedItem = item.value as? Date else { return }
+            case let typedItem as Date:
                 setters.append(Expression<Date?>(itemLabel) <- typedItem)
             default:
                 break

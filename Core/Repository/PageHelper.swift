@@ -30,18 +30,20 @@ public struct PageHelper {
             return .failure(.negativeRange)
         }
 
-        guard (firstItem != 0 || lastItem != Constants.pageSize) || (index > Constants.pageSize / 2) else {
+        guard (firstItem != 0 || lastItem != Constants.pageSize) || (index > Constants.pageTriggerGap) else {
             return .success(.noChangeNeeded)
         }
 
-        let leftSide = firstItem + (Constants.pageSize / 2)
-        let rightSide = lastItem - (Constants.pageSize / 2)
+        let leftSide = firstItem + (Constants.pageTriggerGap)
+        let rightSide = lastItem - (Constants.pageTriggerGap)
 
         guard leftSide < rightSide, (leftSide..<rightSide).contains(index) else {
-            let step = index - (index % (Constants.pageSize/2))
-            let suggestedRange = max(0,index-Constants.pageSize)..<max(0,index-Constants.pageSize) + step + Constants.pageSize
-            return .success(.suggested(page: Page(start: suggestedRange.lowerBound,
-                                                  count: suggestedRange.lowerBound.distance(to: suggestedRange.upperBound))))
+            // TODO: This is a little shaky
+            let step = max(0, Int((index - Constants.pageTriggerGap) / (Constants.pageSize/2)) * (Constants.pageSize/2))
+            let newPage = Page(start: step,
+                               count: Constants.pageSize)
+
+            return (current == newPage) ? .success(.noChangeNeeded) : .success(.suggested(page: newPage))
         }
 
         return .success(.noChangeNeeded)

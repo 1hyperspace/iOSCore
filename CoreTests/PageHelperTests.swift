@@ -30,34 +30,37 @@ class PageHelperTests: XCTestCase {
     func testWithinRanges() {
 
         XCTAssertEqual(
-            PageHelper().calculatePage(index: 500, current: Page(start: 250, count: 500)),
+            PageHelper().calculatePage(index: 300, current: Page(start: 250, count: Constants.pageSize)),
             .success(.noChangeNeeded)
         )
 
         XCTAssertEqual(
-            PageHelper().calculatePage(index: 1, current: Page(start: 0, count: 2)),
-            .success(.suggested(page:  Page(start: 0, count: Constants.pageSize)))
-        )
-
-        XCTAssertEqual(
-            PageHelper().calculatePage(index: 26, current: Page(start: 0, count: 60)),
+            PageHelper().calculatePage(index: 1, current: Page(start: 0, count: Constants.pageSize)),
             .success(.noChangeNeeded)
         )
 
         XCTAssertEqual(
-            PageHelper().calculatePage(index: 70, current: Page(start: 0, count: 80)),
-            .success(.suggested(page: Page(start: 20, count: Constants.pageSize * 2)))
+            PageHelper().calculatePage(index: 26, current: Page(start: 0, count: Constants.pageSize)),
+            .success(.noChangeNeeded)
         )
 
         XCTAssertEqual(
-            PageHelper().calculatePage(index: 70, current: Page(start: 0, count: 80)),
-            .success(.suggested(page: Page(start: 20, count: Constants.pageSize * 2)))
+            PageHelper().calculatePage(index: 70, current: Page(start: 0, count: Constants.pageSize)),
+            .success(.noChangeNeeded)
         )
+    }
 
+    func testCloseToLeft() {
         XCTAssertEqual(
-            PageHelper().calculatePage(index: 49, current: Page(start: 0, count: 50)),
-            .success(.suggested(page: Page(start: 0, count: 75)))
+            PageHelper().calculatePage(index: 109, current: Page(start: 100, count: Constants.pageSize)),
+            .success(.suggested(page: Page(start: 50, count: Constants.pageSize)))
         )
+    }
 
+    func testCloseToRight() {
+        XCTAssertEqual(
+            PageHelper().calculatePage(index: 149, current: Page(start: 50, count: Constants.pageSize)),
+            .success(.suggested(page: Page(start: 100, count: Constants.pageSize)))
+        )
     }
 }

@@ -43,7 +43,6 @@ enum ContentApp: AnyStateApp {
         case .loadHistoricalEvents:
             let defaults = UserDefaults.standard
 
-            defaults.removeObject(forKey: "dataLoaded")
             if defaults.bool(forKey: "dataLoaded") != true {
                 defaults.set(true, forKey: "dataLoaded")
                 defaults.synchronize()
