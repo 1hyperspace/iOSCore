@@ -72,7 +72,7 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
  */
 extension StateApp {
     class EventOperation: Operation {
-        private let event: A.Input
+        public let event: A.Input
         private weak var delegate: StateApp<A>?
         
         init(_ event: A.Input, delegate: StateApp<A>) {
@@ -109,7 +109,7 @@ extension StateApp {
         private let effect: A.Effect
         private let context: A.State
         private weak var delegate: StateApp<A>?
-        private weak var eventOperation: EventOperation?
+        private var eventOperation: EventOperation
 
         init(_ effect: A.Effect, context: A.State, delegate: StateApp<A>, eventOperation: EventOperation) {
             self.effect = effect
@@ -125,10 +125,11 @@ extension StateApp {
 
             // The effect shouldn't take place if the event that triggered it
             // was cancelled
-            guard eventOperation == nil || eventOperation?.isCancelled == false else {
+            guard eventOperation.isCancelled == false else {
+                print("Cancelled because \(eventOperation.event) was cancelled")
                 return
             }
-            
+
             delegate?.process(effect: effect, context: context)
         }
     }
