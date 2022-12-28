@@ -29,11 +29,15 @@ public class Repository<T: Equatable & Storable> {
         stateApp.dispatch(event)
     }
 
-    public func get(itemAt: Int) -> T? {
+    public func preload(itemAt: Int) {
         previousOperation?.cancel()
         previousOperation = stateApp.dispatch(.readingItem(index: itemAt))
+    }
 
-        let absolutePosition = itemAt - (stateApp.state.currentQuery?.page?.start ?? 0)
+    public func get(itemAt index: Int) -> T? {
+        let absolutePosition = index - (stateApp.state.currentQuery?.page?.start ?? 0)
+
+        preload(itemAt: index)
 
         return stateApp.state.cachedItems[safe: absolutePosition]
     }
@@ -86,7 +90,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
 
     public enum Effect: Equatable {
         case initialize(items: [T])
-        case refreshItemsIfNeeded(around: Int)
+        case getCache
         case reloadItems
         case add(items: [T])
     }
@@ -95,7 +99,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         return State()
     }
 
-    public static func handle(event: Input, with state: State) -> Next<State, Effect> {
+    public static func handle(event: Input, with state: State, and helpers: Helpers) -> Next<State, Effect> {
         print("◦ EVENT: \(String(describing: event).prefix(100))")
         switch event {
         case .add(let items):
@@ -112,7 +116,20 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             // loop forever, since it reloads the table
             // TODO: do the check here for "refresh". To do that
             // we need to bring helpers to the `handle(event:)`
-            return .with(.refreshItemsIfNeeded(around: index))
+            let currentPage = state.currentQuery?.page ?? Page(start: 0)
+            switch helpers.page.calculatePage(index: index, current: currentPage) {
+            case .failure(let error):
+                print(error)
+            case .success(.suggested(let page)):
+                print("  📘 Current Page: \(currentPage) - index \(index) - Suggested Page: \(page)")
+                // TODO: Fix This
+                // THIS works because it's by reference :nervous laugh:
+                state.currentQuery?.set(page: page)
+                return .with(.getCache)
+            case .success(.noChangeNeeded):
+                break
+            }
+            return .none
         case .reloadItems:
             switch state.isLoadingItems {
             case true:
@@ -146,28 +163,15 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
         print("  ▉ Effect: \(String(describing: effect).prefix(100))")
         switch effect {
-        case .refreshItemsIfNeeded(let index):
-            let currentPage = state.currentQuery?.page ?? Page(start: 0)
-            switch app.helpers.page.calculatePage(index: index, current: currentPage) {
-            case .failure(let error):
-                print(error)
-            case .success(.suggested(let page)):
-                print("  📘 Current Page: \(currentPage) - index \(index) - Suggested Page: \(page)")
-                // THIS works because it's by reference
-                // :nervous laugh:
-                state.currentQuery?.set(page: page)
-                let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
-                guard let statement = app.helpers.sqlStore.prepare(query.sql()),
-                      let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
-                      let count: Int64 = app.helpers.sqlStore.scalar(using: query.sqlCount)
-                else {
-                    return
-                }
-                app.dispatch(event: .setCache(items: items, totalCount: Int(count)))
-                break
-            case .success(.noChangeNeeded):
-                break
+        case .getCache:
+            let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
+            guard let statement = app.helpers.sqlStore.prepare(query.sql()),
+                  let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
+                  let count: Int64 = app.helpers.sqlStore.scalar(using: query.sqlCount)
+            else {
+                return
             }
+            app.dispatch(event: .setCache(items: items, totalCount: Int(count)))
         case .reloadItems:
             let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
             guard let statement = app.helpers.sqlStore.prepare(query.sql()),

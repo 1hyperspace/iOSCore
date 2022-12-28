@@ -43,7 +43,7 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
     }
     
     private func process(event: A.Input) -> Next<A.State, A.Effect> {
-        let next = A.handle(event: event, with: state)
+        let next = A.handle(event: event, with: state, and: helpers)
 
         if let newState = next.state {
             queue.sync {
@@ -98,7 +98,7 @@ extension StateApp {
             }
             
             next.effects.map {
-                EffectOperation($0, context: nextState, delegate: delegate)
+                EffectOperation($0, context: nextState, delegate: delegate, eventOperation: self)
             }.forEach {
                 delegate.effectsOperationQueue.addOperation($0)
             }
@@ -109,15 +109,23 @@ extension StateApp {
         private let effect: A.Effect
         private let context: A.State
         private weak var delegate: StateApp<A>?
+        private weak var eventOperation: EventOperation?
 
-        init(_ effect: A.Effect, context: A.State, delegate: StateApp<A>) {
+        init(_ effect: A.Effect, context: A.State, delegate: StateApp<A>, eventOperation: EventOperation) {
             self.effect = effect
             self.context = context
             self.delegate = delegate
+            self.eventOperation = eventOperation
         }
         
         override func main() {
             guard isCancelled == false else {
+                return
+            }
+
+            // The effect shouldn't take place if the event that triggered it
+            // was cancelled
+            guard eventOperation == nil || eventOperation?.isCancelled == false else {
                 return
             }
             

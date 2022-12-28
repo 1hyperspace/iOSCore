@@ -27,7 +27,7 @@ public protocol AnyStateApp {
     associatedtype State: Codable & Equatable
     associatedtype Effect: Equatable
     static func initialState() -> State
-    static func handle(event: Input, with state: State) -> Next<State, Effect>
+    static func handle(event: Input, with state: State, and helpers: Helpers) -> Next<State, Effect>
     static func handle(effect: Effect, with state: State, on app: AnyDispatch<Self.Input, Self.Helpers>)
 }
 
