@@ -28,4 +28,8 @@ public struct Page: Codable, Equatable {
     public var sql: String {
         "LIMIT \(start), \(count)"
     }
+
+    func contains(index: Int) -> Bool {
+        return (start...(start+count)).contains(index)
+    }
 }

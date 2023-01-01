@@ -7,17 +7,6 @@
 
 import Foundation
 
-public enum Constants {
-    static let pageSize = pageTriggerGap * 5
-    static let pageTriggerGap = 20
-    // this value should be less than 1/5th
-    // because the page gets moved 100/2=50
-    // so if pageTriggerGap is 30, then it starts
-    // firing back and forth in the middle because
-    // readingItem(index:) gets called on indexes that
-    // are on both sides of the page
-}
-
 // We created a wrapper of the stateApp so we can have custom methods
 // and other convenience variables
 public class Repository<T: Equatable & Storable> {
@@ -29,15 +18,15 @@ public class Repository<T: Equatable & Storable> {
         stateApp.dispatch(event)
     }
 
-    public func preload(itemAt: Int) {
-        previousOperation?.cancel()
-        previousOperation = stateApp.dispatch(.readingItem(index: itemAt))
-    }
-
     public func get(itemAt index: Int) -> T? {
-        let absolutePosition = index - (stateApp.state.currentQuery?.page?.start ?? 0)
+        previousOperation?.cancel()
+        previousOperation = stateApp.dispatch(.readingItem(index: index))
 
-        preload(itemAt: index)
+        guard stateApp.state.currentQuery?.page?.contains(index: index) == true else {
+            return nil
+        }
+
+        let absolutePosition = index - (stateApp.state.currentQuery?.page?.start ?? 0)
 
         return stateApp.state.cachedItems[safe: absolutePosition]
     }
@@ -91,7 +80,6 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
     public enum Effect: Equatable {
         case initialize(items: [T])
         case getCache
-        case reloadItems
         case add(items: [T])
     }
 
@@ -127,6 +115,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
                 state.currentQuery?.set(page: page)
                 return .with(.getCache)
             case .success(.noChangeNeeded):
+                print("  📘 No change needed")
                 break
             }
             return .none
@@ -137,7 +126,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             case false:
                 var state = state
                 state.isLoadingItems = true
-                return .init(state: state, effects: [.reloadItems])
+                return .init(state: state, effects: [.getCache])
             }
         case .itemsReloaded:
             var state = state
@@ -147,7 +136,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             var state = state
             state.currentQuery = query
             state.isLoadingItems = true
-            return .init(state: state, effects: [.reloadItems])
+            return .init(state: state, effects: [.getCache])
         case .setCache(let items, let totalCount):
             var state = state
             state.cachedItems = items // TODO: do IDs diff for animations
@@ -156,7 +145,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         case .setTotalCount(let totalCount):
             var state = state
             state.totalCount = Int(totalCount) // TODO: safely convert
-            return .init(state: state, effects: [.reloadItems])
+            return .init(state: state, effects: [.getCache])
         }
     }
 
@@ -164,15 +153,6 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         print("  ▉ Effect: \(String(describing: effect).prefix(100))")
         switch effect {
         case .getCache:
-            let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
-            guard let statement = app.helpers.sqlStore.prepare(query.sql()),
-                  let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
-                  let count: Int64 = app.helpers.sqlStore.scalar(using: query.sqlCount)
-            else {
-                return
-            }
-            app.dispatch(event: .setCache(items: items, totalCount: Int(count)))
-        case .reloadItems:
             let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
             guard let statement = app.helpers.sqlStore.prepare(query.sql()),
                   let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
