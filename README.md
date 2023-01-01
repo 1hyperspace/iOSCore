@@ -1,15 +1,68 @@
-# 1Hyper iOSCore library for developing Offline Apps
+# iOSCore - Storage library for large offline collections
 
-Most of us developers design apps that are always connected and are always consulting backend services. Most of these apps require an active backend at the moment to do certain operations or to show certain data. 
+iOSCore is a lightweight library for storing codable objects in a local database on iOS devices. With iOSCore, you can easily persist your data model objects and retrieve them with just a few lines of code. The library handles large, searchable collections in a seamless manner through a caching mechanism that allows maximum performance while having low memory footprint. The collection can be filtered and sorted according to a specified query. 
 
-What this library tries to do, is to allow the developer to create mini `Repositories` of classes that, if they conform to certain protocols, can be used offline (read, write, search).
+## Features
 
-## Installation 
+- Simple API for storing and retrieving codable objects
+- Works with any type that conforms to the `Codable` protocol
+- Written in Swift
 
-* Swift Package manager
-* Cocoapods
-* Carthage
+## Usage
 
-## The `Repository` class
+Here is an example of how to use iOSCore to store and retrieve an object:
 
-The `Repository<T>` it's a class that allows you to create a locally stored repository of items. It works on top of a mini framework that allows to create `State` apps in a very declarative way. It's concepts are based on _Mobius Framework_ (see [Concepts](https://github.com/spotify/Mobius.swift/wiki/Concepts) and [Workflow](https://github.com/spotify/Mobius.swift/wiki/The-Mobius-Workflow))
+```swift
+import iOSCore
+
+struct Movie: Storable, Equatable {
+    let title: String
+    let year: Int
+    let cast: [String]
+    let genres: [String]
+    
+    var id: String {
+        title + "\(year)" + "\(genres)" + "\(cast)"
+    }
+
+    enum IndexedFields: IndexableKeys {
+        case title, year
+    }
+}
+
+let repo = Repository<Movie>()
+
+// Handles caching internally
+let movie = repo.get(itemAt: 0)
+```
+
+How to change the default filtering or sorting:
+
+```swift
+
+// Take default query
+let query = repo.stateApp.helpers.modelBuilder.cleanQuery()
+
+// You can sort or filter by the specified indexed keys
+query.addSort(field: .year, expression: "DESC")
+query.addFilter(field: .title, expression: "like %wind%")
+
+// Set and lock the query for reads
+repo.dispatch(.set(query: query))
+
+```
+
+How to add items:
+
+```swift
+// Parse or create items
+let items = [Movie(...), Movie(...)]
+
+// Dispatch async adding
+repo.dispatch(.add(items: items))
+```
+
+## License
+
+iOSCore is released under the MIT license. See LICENSE for details.
+
