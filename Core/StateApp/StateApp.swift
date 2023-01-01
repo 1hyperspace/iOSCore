@@ -25,7 +25,7 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
     private lazy var effectsOperationQueue: OperationQueue = {
       var queue = OperationQueue()
       queue.name = "Effects Operation Queue"
-      queue.maxConcurrentOperationCount = 50
+      queue.maxConcurrentOperationCount = 1
       return queue
     }()
 
@@ -84,12 +84,14 @@ extension StateApp {
         
         override func main() {
             guard let delegate = delegate, isCancelled == false else {
+                print(" ❌ Cancel because of \(event) was cancelled")
                 return
             }
 
             let next = delegate.process(event: event)
             
             guard isCancelled == false else {
+                print(" ❌ Cancel because of \(event) was cancelled")
                 return
             }
             
@@ -119,7 +121,10 @@ extension StateApp {
         }
         
         override func main() {
+            // INFO: No one retains this operation, so this
+            //       would never happen
             guard isCancelled == false else {
+                print(" ❌ Cancel because of effect was cancelled")
                 return
             }
 
