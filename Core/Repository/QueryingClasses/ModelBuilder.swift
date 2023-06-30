@@ -8,17 +8,6 @@
 import Foundation
 import SQLite
 
-public struct AreaExpression {
-    let minLat: Expression<Double>
-    let maxLat: Expression<Double>
-    let minLong: Expression<Double>
-    let maxLong: Expression<Double>
-
-    var all: [Expressible] {
-        return [minLat, maxLat, minLong, maxLong]
-    }
-}
-
 public class ModelBuilder<S: Storable> {
 
     private let contentTable = Table("content_\(S.versionedName)")
@@ -31,12 +20,6 @@ public class ModelBuilder<S: Storable> {
     private let deletedAt = Expression<Date?>("deletedAt")
     private let fullObjectData = Expression<Data>("fullObjectData")
     private let fts = Expression<String?>("fullTextSearch")
-    private let areaExpression = AreaExpression(
-        minLat: .init("minLat"),
-        maxLat: .init("maxLat"),
-        minLong: .init("minLong"),
-        maxLong: .init("maxLong")
-    )
 
     public init() {}
 
@@ -103,12 +86,7 @@ public class ModelBuilder<S: Storable> {
         return createTable
     }
 
-    public func createRTreeSQL() -> String {
-        let module = Module("rtree", [id] + areaExpression.all)
-        return locationTable.create(module)
-    }
-
-    public func insertSQL(for item: S) -> String? {
+     public func insertSQL(for item: S) -> String? {
         let identifier = Int64(item.id.hashValue)
         var setters: [Setter] = []
 

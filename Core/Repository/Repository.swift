@@ -168,7 +168,6 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             [
                 app.helpers.modelBuilder.createSQL(for: firstItem),
                 app.helpers.modelBuilder.createFTSSQL(),
-                app.helpers.modelBuilder.createRTreeSQL()
             ].forEach { queryString in
                 app.helpers.sqlStore.execute(queryString)
             }
