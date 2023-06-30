@@ -14,6 +14,7 @@ class ListViewController: UIViewController {
 
     private var contentApp: StateApp<ContentApp>
     private let repo: Repository<Movie>
+    private let searchController = UISearchController(searchResultsController: nil)
 
     private var collectionView: UICollectionView!
     private var bag = Set<AnyCancellable>()
@@ -87,6 +88,13 @@ class ListViewController: UIViewController {
             .sink { [weak self] state in
                 self?.collectionView.reloadData()
         }.store(in: &bag)
+
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search Movies"
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
+
     }
 }
 
@@ -104,7 +112,7 @@ extension ListViewController: UICollectionViewDelegate, UICollectionViewDataSour
         if let movie = movie {
             cell.configure(text: "\(movie.title)")
         } else {
-            cell.configure(text: "EMPTY")
+            cell.configure(text: "")
         }
         return cell
     }
@@ -112,5 +120,13 @@ extension ListViewController: UICollectionViewDelegate, UICollectionViewDataSour
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("TODO: Push")
     }
+}
 
+extension ListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let query = repo.stateApp.helpers.modelBuilder.cleanQuery()
+        query.addSort(field: .year, expression: "ASC")
+        repo.dispatch(.set(query: query))
+        repo.dispatch(.reloadItems)
+    }
 }
