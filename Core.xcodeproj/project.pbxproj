@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -31,7 +31,7 @@
 		BE863352287B1E7E005062DF /* SQLAndModelStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE863351287B1E7E005062DF /* SQLAndModelStoreTests.swift */; };
 		BE863355287B1EE3005062DF /* DummyStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE863354287B1EE3005062DF /* DummyStruct.swift */; };
 		BE8FE22B29611A1E007A2109 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8FE22A29611A1E007A2109 /* Constants.swift */; };
-		BEBEBE8529746B8000E542D5 /* ListingQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBEBE8429746B8000E542D5 /* ListingQuery.swift */; };
+		BEBEBE8529746B8000E542D5 /* Query.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBEBE8429746B8000E542D5 /* Query.swift */; };
 		BEF7535C28660C0E00B67786 /* NetworkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF7535B28660C0E00B67786 /* NetworkHelper.swift */; };
 		BEF753642866553600B67786 /* Movie.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF753632866553600B67786 /* Movie.swift */; };
 		FBF91B112637339F00436090 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF91B102637339F00436090 /* FileManager.swift */; };
@@ -75,7 +75,7 @@
 		BE863351287B1E7E005062DF /* SQLAndModelStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLAndModelStoreTests.swift; sourceTree = "<group>"; };
 		BE863354287B1EE3005062DF /* DummyStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DummyStruct.swift; sourceTree = "<group>"; };
 		BE8FE22A29611A1E007A2109 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		BEBEBE8429746B8000E542D5 /* ListingQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListingQuery.swift; sourceTree = "<group>"; };
+		BEBEBE8429746B8000E542D5 /* Query.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Query.swift; sourceTree = "<group>"; };
 		BEF7535B28660C0E00B67786 /* NetworkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkHelper.swift; sourceTree = "<group>"; };
 		BEF753632866553600B67786 /* Movie.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Movie.swift; sourceTree = "<group>"; };
 		FBF91B102637339F00436090 /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
@@ -107,7 +107,7 @@
 			children = (
 				7E4476C926288A9700099450 /* Page.swift */,
 				7E652A8D2624A55E007B5264 /* ModelBuilder.swift */,
-				BEBEBE8429746B8000E542D5 /* ListingQuery.swift */,
+				BEBEBE8429746B8000E542D5 /* Query.swift */,
 			);
 			path = QueryingClasses;
 			sourceTree = "<group>";
@@ -379,7 +379,7 @@
 				BEF753642866553600B67786 /* Movie.swift in Sources */,
 				BE61683E2887CDC00074E528 /* AppDelegate.swift in Sources */,
 				7ECB4D7626205B2000FB65CE /* AnyStateApp.swift in Sources */,
-				BEBEBE8529746B8000E542D5 /* ListingQuery.swift in Sources */,
+				BEBEBE8529746B8000E542D5 /* Query.swift in Sources */,
 				7ECB4D7B26205DF400FB65CE /* StateApp.swift in Sources */,
 				7ECB4DAB2624184300FB65CE /* Repository.swift in Sources */,
 				BE6168402887CE3E0074E528 /* SceneDelegate.swift in Sources */,
@@ -463,7 +463,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -518,7 +518,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -538,7 +538,7 @@
 				DEVELOPMENT_TEAM = 54W5VSY55R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Core/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -560,7 +560,7 @@
 				DEVELOPMENT_TEAM = 54W5VSY55R;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Core/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

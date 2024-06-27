@@ -15,6 +15,7 @@ class ListViewController: UIViewController {
     private var contentApp: StateApp<ContentApp>
     private let repo: Repository<Movie>
     private let searchController = UISearchController(searchResultsController: nil)
+    private var lastOp: Operation?
 
     private var collectionView: UICollectionView!
     private var bag = Set<AnyCancellable>()
@@ -48,10 +49,9 @@ class ListViewController: UIViewController {
             )
         )
 
-        let query = repo.stateApp.helpers.modelBuilder.cleanQuery()
-        query
-            .addSort(field: .year, expression: "DESC")
-        repo.dispatch(.set(query: query))
+        let query = repo.stateApp.helpers.modelBuilder.defaultQuery()
+        query.addSort(field: .year, expression: "DESC")
+        _ = repo.dispatch(.set(query: query))
 
         contentApp.dispatch(.checkForData)
         
@@ -70,7 +70,7 @@ class ListViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        repo.dispatch(.reloadItems)
+        _ = repo.dispatch(.reloadItems)
     }
 
     private func setup() {
@@ -118,15 +118,22 @@ extension ListViewController: UICollectionViewDelegate, UICollectionViewDataSour
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("TODO: Push")
+        let movie = repo.get(itemAt: indexPath.row)
+
+        print("TODO: Push: \(movie!.id)")
     }
 }
 
 extension ListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        let query = repo.stateApp.helpers.modelBuilder.cleanQuery()
-        query.addSort(field: .year, expression: "ASC")
-        repo.dispatch(.set(query: query))
-        repo.dispatch(.reloadItems)
+        var query = repo.stateApp.helpers.modelBuilder.searchQuery()
+        if let queryText = searchController.searchBar.text, !queryText.isEmpty {
+            query.addFilter(field: .title, expression: "MATCH \"\(queryText)\"")
+        } else {
+            query = repo.stateApp.helpers.modelBuilder.defaultQuery()
+        }
+        lastOp?.cancel()
+        lastOp = repo.dispatch(.set(query: query))
+        contentApp.dispatch(.checkForData)
     }
 }

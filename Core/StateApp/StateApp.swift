@@ -43,16 +43,14 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
     }
     
     private func process(event: A.Input) -> Next<A.State, A.Effect> {
-        let next = A.handle(event: event, with: state, and: helpers)
-
-        if let newState = next.state {
-            queue.sync {
+        queue.sync {
+            let next = A.handle(event: event, with: state, and: helpers)
+            if let newState = next.state {
                 self.state = newState
             }
+            // For next status, we can have the new one or the untouched one
+            return Next(state: next.state ?? self.state, effects: next.effects)
         }
-
-        // For next status, we can have the new one or the untouched one
-        return Next(state: next.state ?? self.state, effects: next.effects)
     }
     
     private func process(effect: A.Effect, context: A.State) {

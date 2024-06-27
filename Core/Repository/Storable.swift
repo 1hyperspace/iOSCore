@@ -16,15 +16,8 @@ public protocol Locatable {
     var location: (Double, Double)? { get }
 }
 
-public protocol Auditable {
-    var createdAt: Date { get }
-    var modifiedAt: Date { get }
-    var deletedAt: Date { get }
+public protocol Expirable {
     var expiresAt: Date { get }
-}
-
-public protocol Searchable {
-    var ftsString: String { get }
 }
 
 public enum NoKeys: CodingKey, CaseIterable {}
