@@ -137,10 +137,6 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             var state = state
             state.currentQuery = query
             state.isLoadingItems = true
-            if let count: Int64 = helpers.sqlStore.scalar(using: query.sqlCount) {
-                state.totalCount = Int(count)
-            }
-
             return .init(state: state, effects: [.getCache])
         case .setCache(let items, let totalCount):
             var state = state

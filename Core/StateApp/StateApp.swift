@@ -25,7 +25,7 @@ public class StateApp<A: AnyStateApp>: ObservableObject {
     private lazy var effectsOperationQueue: OperationQueue = {
       var queue = OperationQueue()
       queue.name = "Effects Operation Queue"
-      queue.maxConcurrentOperationCount = 1
+      queue.maxConcurrentOperationCount = 5
       return queue
     }()
 
