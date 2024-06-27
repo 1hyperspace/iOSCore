@@ -7,7 +7,8 @@
 
 import Foundation
 
-public class ListingQuery<S: Storable>: Equatable, Codable {
+
+public class Query<S: Storable>: Equatable, Codable {
     private var whereClauses: [String]
     private var sortByClauses: [String]
     public var page: Page?
@@ -19,7 +20,7 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
         self.sortByClauses = []
     }
 
-    public static func == (lhs: ListingQuery, rhs: ListingQuery) -> Bool {
+    public static func == (lhs: Query, rhs: Query) -> Bool {
         lhs.page == rhs.page && lhs.sql() == rhs.sql()
     }
 
@@ -53,7 +54,7 @@ public class ListingQuery<S: Storable>: Equatable, Codable {
         return query
     }
 
-    var sqlCount: String {
+    public var sqlCount: String {
         var query = "SELECT count(id) from \(itemName)"
         query += whereClauses.count > 0 ? " WHERE \(whereClauses.joined(separator: " AND "))" : ""
         return query

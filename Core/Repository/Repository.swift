@@ -14,7 +14,7 @@ public class Repository<T: Equatable & Storable> {
     let modelBuilder: ModelBuilder<T>
     var previousOperation: Operation? = nil
 
-    public func dispatch(_ event: RepositoryApp<T>.Input) {
+    public func dispatch(_ event: RepositoryApp<T>.Input) -> Operation {
         stateApp.dispatch(event)
     }
 
@@ -65,7 +65,11 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         case readingItem(index: Int)
         case reloadItems
         case itemsReloaded
-        case set(query: ListingQuery<T>)
+        case set(query: Query<T>)
+    }
+
+    public struct EphemeralState {
+        var newItems: [String]
     }
 
     public struct State: Equatable, Codable {
@@ -73,14 +77,14 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         var totalCount: Int = 0
         var cachedItems: [T] = []
         var currentIndex: Int = 0
-        var currentQuery: ListingQuery<T>?
+        var currentQuery: Query<T>?
         var dbExists: Bool = false
     }
 
     public enum Effect: Equatable {
         case initialize(items: [T])
         case getCache
-        case add(items: [T])
+        case addToDB(items: [T])
     }
 
     public static func initialState() -> State {
@@ -94,25 +98,22 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             guard state.dbExists else {
                 return .with(.initialize(items: items))
             }
-            return .with(.add(items: items))
+            return .with(.addToDB(items: items))
         case .dbInitialized(let items):
             var state = state
             state.dbExists = true
-            return .init(state: state, effects: [.add(items: items)])
+            return .init(state: state, effects: [.addToDB(items: items)])
         case .readingItem(let index):
             // Reading item does not update state, otherwise it would
             // loop forever, since it reloads the table
-            // TODO: do the check here for "refresh". To do that
-            // we need to bring helpers to the `handle(event:)`
             let currentPage = state.currentQuery?.page ?? Page(start: 0)
             switch helpers.page.calculatePage(index: index, current: currentPage) {
             case .failure(let error):
                 print(error)
             case .success(.suggested(let page)):
                 print("  📘 Current Page: \(currentPage) - index \(index) - Suggested Page: \(page)")
-                // TODO: Fix This
                 // THIS works because it's by reference :nervous laugh:
-                state.currentQuery?.set(page: page)
+                _ = state.currentQuery?.set(page: page)
                 return .with(.getCache)
             case .success(.noChangeNeeded):
                 print("  📘 No change needed")
@@ -136,6 +137,10 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             var state = state
             state.currentQuery = query
             state.isLoadingItems = true
+            if let count: Int64 = helpers.sqlStore.scalar(using: query.sqlCount) {
+                state.totalCount = Int(count)
+            }
+
             return .init(state: state, effects: [.getCache])
         case .setCache(let items, let totalCount):
             var state = state
@@ -154,7 +159,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         switch effect {
         case .getCache:
             let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
-            guard let statement = app.helpers.sqlStore.prepare(query.sql()),
+            guard let statement = app.helpers.sqlStore.prepare(query.sql(with: nil)),
                   let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
                   let count: Int64 = app.helpers.sqlStore.scalar(using: query.sqlCount)
             else {
@@ -167,7 +172,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             guard let firstItem = items.first else { return }
             [
                 app.helpers.modelBuilder.createSQL(for: firstItem),
-                app.helpers.modelBuilder.createFTSSQL(),
+                app.helpers.modelBuilder.createFTSSQL(for: firstItem),
             ].forEach { queryString in
                 app.helpers.sqlStore.execute(queryString)
             }
@@ -176,8 +181,10 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
                 fatalError("DB non existent (should've been created or been already available)")
             }
             app.dispatch(event: .dbInitialized(items: items))
-        case .add(let items):
-            app.helpers.sqlStore.transaction(sqlStatements: items.compactMap { app.helpers.modelBuilder.insertSQL(for: $0) })
+        case .addToDB(let items):
+            app.helpers.sqlStore.transaction(sqlStatements: items.flatMap {
+                app.helpers.modelBuilder.addItem($0)
+            })
             let currentQuery = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
             guard let count: Int64 = app.helpers.sqlStore.scalar(using: currentQuery.sqlCount)
             else {

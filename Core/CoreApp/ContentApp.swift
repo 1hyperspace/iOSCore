@@ -28,12 +28,10 @@ enum ContentApp: AnyStateApp {
     // TODO: Should we get access to the helpers here? otherwise you always
     // need to create a new effect to dispatch to another state machine
     public static func handle(event: Input, with state: State, and helpers: Helpers) -> Next<State, Effect> {
-        var state = state
         switch event {
         case .checkForData:
             return .with(.loadHistoricalEvents)
         case .moviesParsed(let items):
-            state.buttonTapped += 1
             return .init(state: state, effects: [.saveToRepository(items: items)])
         }
     }
@@ -57,8 +55,9 @@ enum ContentApp: AnyStateApp {
                     fatalError("Failed to read")
                 }
             }
+            break
         case .saveToRepository(let items):
-            app.helpers.movieRepo.dispatch(.add(items: items))
+            _ = app.helpers.movieRepo.dispatch(.add(items: items))
         }
     }
 }

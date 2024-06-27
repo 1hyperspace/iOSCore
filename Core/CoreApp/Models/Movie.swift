@@ -9,12 +9,13 @@ import Foundation
 
 
 struct Movie: Storable, Equatable {
+
     let title: String
     let year: Int
     let cast: [String]
     let genres: [String]
     var id: String {
-        title + "\(year)" + "\(genres)" + "\(cast)" // does a SHA
+        title + "\(year)" + "\(genres.joined())" + "\(cast.joined())" // does a SHA
     }
 
     enum IndexedFields: IndexableKeys {
