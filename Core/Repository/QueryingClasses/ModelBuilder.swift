@@ -31,7 +31,7 @@ public class ModelBuilder<S: Storable> {
     }
 
     public func searchQuery() -> Query<S> {
-        return Query(itemName: "search_\(S.versionedName)").set(page: Page(count: 10))
+        return Query(itemName: "search_\(S.versionedName)").set(page: Page())
     }
 
     public func createObjects(stmt: Statement) throws -> [S]{
@@ -103,7 +103,7 @@ public class ModelBuilder<S: Storable> {
         ]
     }
 
-    public func settersSQL(for item: S) -> [Setter] {
+    private func settersSQL(for item: S) -> [Setter] {
         let identifier = Int64(item.id.hashValue)
         var setters: [Setter] = []
 

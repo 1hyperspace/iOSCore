@@ -120,7 +120,7 @@ extension ListViewController: UICollectionViewDelegate, UICollectionViewDataSour
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let movie = repo.get(itemAt: indexPath.row)
 
-        print("TODO: Push: \(movie!.id)")
+        print("TODO: Push: \(movie?.id ?? "not found") ")
     }
 }
 
