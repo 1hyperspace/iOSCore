@@ -11,7 +11,6 @@ import SQLite
 public class ModelBuilder<S: Storable> {
 
     private let contentTable = Table("content_\(S.versionedName)")
-    private let locationTable = VirtualTable("location_\(S.versionedName)")
     private let searchTable = VirtualTable("search_\(S.versionedName)")
 
     private let id = Expression<Int64>("id")
@@ -92,7 +91,8 @@ public class ModelBuilder<S: Storable> {
         }
 
         let createTable = searchTable.create(.FTS5(config))
-        return createTable
+        let createIndex = "CREATE UNIQUE INDEX idx_\(S.versionedName)_unique_id ON search_\(S.versionedName)(id);"
+        return createTable + ";" + createIndex
     }
 
     public func addItem(_ item: S) -> [String] {
