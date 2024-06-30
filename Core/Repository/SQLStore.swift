@@ -22,6 +22,7 @@ class SQLStore<S: Storable> {
                 try? FileManager.default.removeItem(at: fullPath)
             }
             self.db = try Connection(fullPath.absoluteString)
+            execute("PRAGMA journal_mode=WAL;")
         }
         catch {
             print("Error Initializing Class: \(error.localizedDescription)")

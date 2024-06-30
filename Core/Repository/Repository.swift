@@ -83,7 +83,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
 
     public enum Effect: Equatable {
         case initialize(items: [T])
-        case getCache
+        case reloadCache
         case addToDB(items: [T])
     }
 
@@ -114,7 +114,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
                 print("  📘 Current Page: \(currentPage) - index \(index) - Suggested Page: \(page)")
                 // THIS works because it's by reference :nervous laugh:
                 _ = state.currentQuery?.set(page: page)
-                return .with(.getCache)
+                return .with(.reloadCache)
             case .success(.noChangeNeeded):
                 print("  📘 No change needed")
                 break
@@ -127,7 +127,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             case false:
                 var state = state
                 state.isLoadingItems = true
-                return .init(state: state, effects: [.getCache])
+                return .init(state: state, effects: [.reloadCache])
             }
         case .itemsReloaded:
             var state = state
@@ -137,7 +137,7 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
             var state = state
             state.currentQuery = query
             state.isLoadingItems = true
-            return .init(state: state, effects: [.getCache])
+            return .init(state: state, effects: [.reloadCache])
         case .setCache(let items, let totalCount):
             var state = state
             state.cachedItems = items // TODO: do IDs diff for animations
@@ -146,14 +146,14 @@ public enum RepositoryApp<T: Equatable & Storable>: AnyStateApp {
         case .setTotalCount(let totalCount):
             var state = state
             state.totalCount = Int(totalCount) // TODO: safely convert
-            return .init(state: state, effects: [.getCache])
+            return .init(state: state, effects: [.reloadCache])
         }
     }
 
     public static func handle(effect: Effect, with state: State, on app: AnyDispatch<Input, Helpers>) {
         print("  ▉ Effect: \(String(describing: effect).prefix(100))")
         switch effect {
-        case .getCache:
+        case .reloadCache:
             let query = state.currentQuery ?? app.helpers.modelBuilder.defaultQuery()
             guard let statement = app.helpers.sqlStore.prepare(query.sql(with: nil)),
                   let items = try? app.helpers.modelBuilder.createObjects(stmt: statement),
